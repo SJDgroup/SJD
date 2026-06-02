@@ -15,24 +15,23 @@ Imports: tidyverse,
     RSpectra,
     fastICA,
     NMF,
-    Biobase,
     MASS,
     RMTstat,
     dplyr,
     biomaRt,
     plotrix,
     ggplot2,
-    stringr,
-    gridExtra,
-    googledrive
+    Rtsne,
+    uwot,
+    stringr
 Description: This is a R Package for Visualizing Biologically StructuredGene Expression Matrix Environment Based on Low Rank Models, (1) separately, (2) concatenately, (3) jointly, and (4) sequentially.
 Depends: R (>= 3.5.0)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.3.1
 Suggests: 
     rmarkdown,
     knitr
 VignetteBuilder: knitr
 URL: https://github.com/CHuanSite/SJD
+Config/roxygen2/version: 8.0.0

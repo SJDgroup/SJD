@@ -8,16 +8,14 @@
 #' @export
 
 umap_tsne_onLC=function(twoStageLCAobj,group,n_comp,add_to_meta,meta_list){
-  library(ggplot2)
-  library(Rtsne)
-  library(uwot)
+
 
   ## add argument to add umap/tsne coords to metadata obj
   for (i in names(twoStageLCAobj$score_list)){
     scores_sample_shared=t(twoStageLCAobj$score_list[[i]][[group]])
     scores_sample_shared=as.data.frame(scores_sample_shared)
-    shared_umap=umap(scores_sample_shared[,1:n_comp], n_neighbors = 50, learning_rate = 0.5, init = "random")
-    shared_tsne=Rtsne(scores_sample_shared[,1:n_comp])
+    shared_umap=uwot::umap(scores_sample_shared[,1:n_comp], n_neighbors = 50, learning_rate = 0.5, init = "random")
+    shared_tsne=Rtsne::Rtsne(scores_sample_shared[,1:n_comp])
     umaptsne_df=as.data.frame(shared_umap[,1])
     colnames(umaptsne_df)=c('shared_UMAP_1')
     umaptsne_df['shared_UMAP_2']=shared_umap[,2]

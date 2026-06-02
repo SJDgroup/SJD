@@ -39,6 +39,9 @@ A list that contains the projected scores of each dataset on every component.
 projectiLCA estimates the embeddings for samples in a new dataset when given a gene loading matrix from an iLCA analysis result of another single matrix, 
 or set of matrices (e.g. the "list_component" from a twoStageiLCA output object)
 }
+\details{
+PLEASE MAKE SURE YOUR proj_dataset AND list_component ELEMENTS HAVE MEANINGFUL ROW(GENE) NAMES - they are matched across matrices for the projection.
+}
 \examples{
 proj_dataset = list(matrix(runif(5000, 1, 2), nrow = 100, ncol = 50))
 proj_group = c(TRUE, TRUE) # which groupings in the twoStageiLCA analysis you want to project on.
@@ -50,8 +53,8 @@ proj_group = proj_group,
 list_component = list_component,
 ica_score = ica_score)
 
-PLEASE MAKE SURE YOUR proj_dataset AND list_component ELEMENTS HAVE MEANINGFUL ROW(GENE) NAMES - they are matched across matrices for the projection. 
-#'
+
+
 }
 \keyword{iLCA}
 \keyword{projection,}

@@ -3,6 +3,7 @@
 #' projectiLCA estimates the embeddings for samples in a new dataset when given a gene loading matrix from an iLCA analysis result of another single matrix, 
 #' or set of matrices (e.g. the "list_component" from a twoStageiLCA output object)
 #'
+#' PLEASE MAKE SURE YOUR proj_dataset AND list_component ELEMENTS HAVE MEANINGFUL ROW(GENE) NAMES - they are matched across matrices for the projection. 
 #' 
 #' @param proj_dataset The dataset(s) to be projected on. 
 #' @param proj_group A logical vector indicating which groupings, i. e. which elements of list_component should be used for each projected dataset. The length of proj_group should match the length of list_component.
@@ -28,8 +29,8 @@
 #' list_component = list_component,
 #' ica_score = ica_score)
 #' 
-#' PLEASE MAKE SURE YOUR proj_dataset AND list_component ELEMENTS HAVE MEANINGFUL ROW(GENE) NAMES - they are matched across matrices for the projection. 
-#' #'
+#' 
+#' 
 #' @export
 
 

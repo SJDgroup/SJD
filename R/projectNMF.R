@@ -3,8 +3,11 @@
 #' projectNMF estimates the embeddings for samples in a new dataset when given a gene loading matrix from an NMF decomposition of another single matrix, 
 #' or set of matrices (e.g. the "list_component" from a jointNMF output object)
 #'
+#' PLEASE MAKE SURE YOUR proj_dataset AND list_component ELEMENTS HAVE MEANINGFUL ROW(GENE) NAMES - they are matched across matrices for the projection. 
 #' 
-#' @param proj_dataset The dataset(s) to be projected on. 
+#' list_component should be jointNMF$linked_component_list from the jointNMF result
+#' 
+#' @param proj_dataset The dataset to be projected on. 
 #' @param proj_group A logical vector indicating which groupings, i. e. which elements of list_component should be used for each projected dataset. The length of proj_group should match the length of list_component.
 #' @param list_component a single matrix of gene loadings as a list element, or a list_component produced from a jointNMF() decomposition.
 #' @param max_ite The maximum number of iterations for the jointNMF algorithms to run, default value is set to 1000
@@ -19,14 +22,14 @@
 #' @examples
 #' proj_dataset = list(matrix(runif(5000, 1, 2), nrow = 100, ncol = 50))
 #' proj_group = c(TRUE, TRUE) # which groupings in the joint decomposition you want to project on.
-#' list_component = jointNMF$linked_component_list # from jointNMF result
+#' list_component = list(matrix(runif(600, 1, 2), nrow = 100, ncol = 6), matrix(runif(200, 1, 2), nrow = 100, ncol = 2),)
 #' res_projNMF = projectNMF(
 #' proj_dataset = proj_dataset,
 #' proj_group = proj_group,
 #' list_component = list_component)
 #' 
-#' PLEASE MAKE SURE YOUR proj_dataset AND list_component ELEMENTS HAVE MEANINGFUL ROW(GENE) NAMES - they are matched across matrices for the projection. 
-#' #'
+#' 
+#'
 #' @export
 
 

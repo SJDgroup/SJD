@@ -48,6 +48,7 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
 
     ## Preprocess Dataset
     dataset = frameToMatrix(dataset)
+    
     if(!is.null(screen_prob)){
         dataset = geneScreen(dataset, screen_prob)
     }
@@ -112,8 +113,19 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
     }
     
 
-    # H <- t(scale(t(H), center = FALSE))
-    # W = W * (X %*% t(H)) / (W %*% H %*% t(H))
+    # scaling
+    # Normalize each full row of H to [0,1] by row max, while preserving W %*% H exactly
+    eps <- 1e-12
+    
+    for (k in 1:nrow(H)) {
+      hk_max <- max(H[k, ])
+      if (hk_max > eps) {
+        H[k, ] <- H[k, ] / hk_max
+        W[, k] <- W[, k] * hk_max
+      }
+    }
+    
+    W[is.na(W)] = 0
     
 
     ## Output component and scores
@@ -140,24 +152,25 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
     # list_score = filterNAValue(list_score, dataset, group)
     list_score = rebalanceData(list_score, group, dataset)
 
-
-    for(i in 1 : K){
-        for(j in 1 : N){
-          # Extract the subset of H based on current i and j
-          list_score[[j]][[i]] <- t(apply(t(list_score[[j]][[i]]), 2, min_max_normalization))
-          H[ifelse(i == 1, 1, cumsum(comp_num)[i - 1] + 1) : cumsum(comp_num)[i],
-            ifelse(j == 1, 1, cumsum(N_dataset)[j - 1] + 1) : cumsum(N_dataset)[j]] <- list_score[[j]][[i]]
-        }
-    }
-
-    #recalculate gene score
-    W = W * (X %*% t(H)) / (W %*% H %*% t(H))
+    # WE DON'T USE ANYMORE
+    # for(i in 1 : K){
+    #     for(j in 1 : N){
+    #       # Extract the subset of H based on current i and j
+    #       list_score[[j]][[i]] <- t(apply(t(list_score[[j]][[i]]), 2, min_max_normalization))
+    #       H[ifelse(i == 1, 1, cumsum(comp_num)[i - 1] + 1) : cumsum(comp_num)[i],
+    #         ifelse(j == 1, 1, cumsum(N_dataset)[j - 1] + 1) : cumsum(N_dataset)[j]] <- list_score[[j]][[i]]
+    #     }
+    # }
+    # 
+    # #recalculate gene score
+    # W = W * (X %*% t(H)) / (W %*% H %*% t(H))
     
-    W[is.na(W)] = 0
     
-    for(i in 1 : K){
-      list_component[[i]] = W[, ifelse(i == 1, 1, cumsum(comp_num)[i - 1] + 1) : cumsum(comp_num)[i]]
-    }
+    # W[is.na(W)] = 0
+    # 
+    # for(i in 1 : K){
+    #   list_component[[i]] = W[, ifelse(i == 1, 1, cumsum(comp_num)[i - 1] + 1) : cumsum(comp_num)[i]]
+    # }
     
 
     
