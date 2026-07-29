@@ -9,7 +9,8 @@ sjdWrap(
   species.vector,
   geneType.vector,
   geneType.out = "symbol",
-  species.out
+  species.out,
+  useNewestVersion = FALSE
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ sjdWrap(
 \item{geneType.out}{character of output gene/rowname type of each matrix i.e "symbol"}
 
 \item{species.out}{character of output species type for gene/rowname}
+
+\item{useNewestVersion}{logical indicating if function getMatch should attempt to use the latest version of ensembl, or to use the May 2025 archive version that is more stable. default is FALSE.}
 }
 \value{
 A list of expression matrices (of different species) with only shared genes

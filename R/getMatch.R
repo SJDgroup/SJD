@@ -8,7 +8,7 @@
 #' @param newSpecies a character vector indicating the species for which orthologous gene identifiers are desired; must be one of: "human", "mouse", "roundworm", "fruitfly", "zebrafish", "chicken", "rat", "guinea pig", "golden hamster", "rabbit", "pig", "sheep", "cow", "dog", "cat", "macaque", "bonobo", "chimpanzee"
 #' @param moreAttrIn character vector of other gene attributes that you want returned for the input species from biomaRt - to add this argument you must know the names of the fields in the species-specific biomaRt that you are requesting. default is NA.
 #' @param moreAttrNew character vector of other gene attributes that you want returned for the output species from biomaRt - to add this argument you must know the names of the fields in the species-specific biomaRt that you are requesting. default is NA.
-#' @param useNewestVersion logical indicating if the function should attempt to use the latest version of ensembl, or to use the Aug 2020 archive version that is more stable. default is FALSE.
+#' @param useNewestVersion logical indicating if the function should attempt to use the latest version of ensembl, or to use the May 2025 archive version that is more stable. default is FALSE.
 #'
 #' @importFrom biomaRt useMart getLDS
 #'
@@ -60,8 +60,8 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FA
         df.in = useMart(biomart = "ensembl", dataset = mart.in)
         df.new = useMart(biomart = "ensembl", dataset = mart.new)
     }else{
-        df.in = useMart(biomart = "ensembl", dataset = mart.in, host = "https://aug2020.archive.ensembl.org")
-        df.new = useMart(biomart = "ensembl", dataset = mart.new, host = "https://aug2020.archive.ensembl.org")
+        df.in = useMart(biomart = "ensembl", dataset = mart.in, host = "https://may2025.archive.ensembl.org")
+        df.new = useMart(biomart = "ensembl", dataset = mart.new, host = "https://may2025.archive.ensembl.org")
     }
 
     symbol.in = as.character(species[inSpecies, "genesymbol.attr"])

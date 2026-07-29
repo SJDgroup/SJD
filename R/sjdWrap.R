@@ -7,6 +7,7 @@
 #' @param geneType.vector character of gene/rowname type of each matrix i.e c("symbol","ensembl","symbol")
 #' @param geneType.out character of output gene/rowname type of each matrix i.e "symbol"
 #' @param species.out character of output species type for gene/rowname
+#' @param useNewestVersion logical indicating if function getMatch should attempt to use the latest version of ensembl, or to use the May 2025 archive version that is more stable. default is FALSE.
 #'
 #' @importFrom dplyr inner_join
 #'
@@ -26,7 +27,7 @@
 #'
 #' @export
 
-sjdWrap <- function(data.list, species.vector, geneType.vector, geneType.out="symbol", species.out){
+sjdWrap <- function(data.list, species.vector, geneType.vector, geneType.out="symbol", species.out, useNewestVersion = FALSE){
     N = length(data.list) #number of datasets
 
     if(N != length(species.vector)){
@@ -68,7 +69,7 @@ sjdWrap <- function(data.list, species.vector, geneType.vector, geneType.out="sy
 
         genes = rownames(data.list[[i]])
 
-        genes.tbl = getMatch(genes, inSpecies=species.1, inType=geneType.vector[i], newSpecies = species.out)
+        genes.tbl = getMatch(genes, inSpecies=species.1, inType=geneType.vector[i], newSpecies = species.out, useNewestVersion = useNewestVersion)
         genes.tbl = na.omit(genes.tbl)
 
         genes.tbl$ORIGid = genes.tbl[, "genes"]
