@@ -32,13 +32,13 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FA
         species.nm = c("human", "mouse", "roundworm",
                        "fruitfly", "zebrafish", "frog", "chicken", "rat", "guinea pig",
                        "golden hamster", "rabbit", "pig", "sheep", "cow", "dog",
-                       "cat", "macaque", "bonobo", "chimpanzee"),
+                       "cat", "macaque", "bonobo", "chimpanzee","ferret"),
         species.latin = c("homo sapiens",
                           "mus musculus", "caenorhabditis elegans", "drosphila melanagaster",
                           "danio rerio", "xenopus tropicalis", "gallus gallus", "ratus norvegicus", "cavia porcellus",
                           "melanochromis auratus", "oryctolagus cuniculus", "sus scrofa domesticus",
                           "ovis aries", "bos taurus", "canis lupus familiaris",
-                          "felis catus", "macaca mulatta", "pan paniscus", "pan troglodytes"),
+                          "felis catus", "macaca mulatta", "pan paniscus", "pan troglodytes","Mustela putorius furo"),
         ensembl.nms = c("hsapiens_gene_ensembl", "mmusculus_gene_ensembl",
                         "celegans_gene_ensembl", "dmelanogaster_gene_ensembl",
                         "drerio_gene_ensembl", "xtropicalis_gene_ensembl", "ggallus_gene_ensembl", "rnorvegicus_gene_ensembl",
@@ -46,13 +46,19 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FA
                         "ocuniculus_gene_ensembl", "sscrofa_gene_ensembl",
                         "oaries_gene_ensembl", "btaurus_gene_ensembl", "clfamiliaris_gene_ensembl",
                         "fcatus_gene_ensembl", "mmulatta_gene_ensembl", "ppaniscus_gene_ensembl",
-                        "ptroglodytes_gene_ensembl"),
-        genesymbol.attr = c("hgnc_symbol",
-                            "mgi_symbol", "external_gene_name", "external_gene_name",
-                            "hgnc_symbol", "hgnc_symbol", "hgnc_symbol", "external_gene_name",
-                            "hgnc_symbol", "mgi_symbol", "hgnc_symbol", "hgnc_symbol",
-                            "hgnc_symbol", "hgnc_symbol", "hgnc_symbol", "hgnc_symbol",
-                            "hgnc_symbol", "hgnc_symbol", "hgnc_symbol"), row.names = 1)
+                        "ptroglodytes_gene_ensembl","mpfuro_gene_ensembl"),
+ #       genesymbol.attr = c("hgnc_symbol",
+ #                           "mgi_symbol", "external_gene_name", "external_gene_name",
+ #                           "hgnc_symbol", "hgnc_symbol", "hgnc_symbol", "external_gene_name",
+ #                           "hgnc_symbol", "mgi_symbol", "hgnc_symbol", "hgnc_symbol",
+ #                           "hgnc_symbol", "hgnc_symbol", "hgnc_symbol", "hgnc_symbol",
+ #                           "hgnc_symbol", "hgnc_symbol", "hgnc_symbol"), row.names = 1)
+         genesymbol.attr = c("external_gene_name",
+                            "external_gene_name", "external_gene_name", "external_gene_name",
+                            "external_gene_name", "external_gene_name", "external_gene_name", "external_gene_name",
+                            "external_gene_name", "external_gene_name", "external_gene_name", "external_gene_name",
+                            "external_gene_name", "external_gene_name", "external_gene_name", "external_gene_name",
+                            "external_gene_name", "external_gene_name", "external_gene_name","external_gene_name"), row.names = 1)
     mart.in = species[inSpecies, ]$ensembl.nms
     mart.new = species[newSpecies, ]$ensembl.nms
 
