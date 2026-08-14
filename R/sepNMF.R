@@ -2,7 +2,7 @@
 #'
 #' Apply NMF (Nonnegative Matrix Factorization) to a single data set
 #'
-#' @param dataset A dataframe/matrix to be decomposed
+#' @param dataset A list of one element containing the dataframe/matrix to be decomposed
 #' @param comp_num Number of NMFs to be extracted
 #' @param weighting Weighting of each dataset, initialized to be NULL
 #' @param perturbation A small perturbation to ensure nmf works well
