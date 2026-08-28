@@ -9,6 +9,7 @@
 #' @param enable_normalization An argument to decide whether to use normalizaiton or not,  default is TRUE
 #' @param column_sum_normalization An argument to decide whether to use column sum normalization or not, default it FALSE
 #' @param screen_prob A vector of probabilies for genes to be chosen
+#' @param ... extra arguments passed to NMF::nmf, which can be used to specify optimization parameters
 #'
 #' @importFrom NMF nmf
 #'
@@ -23,7 +24,7 @@
 #'
 #' @export
 
-sepNMF <- function(dataset, comp_num, weighting = NULL, perturbation = 0.0001, enable_normalization = TRUE, column_sum_normalization = FALSE, screen_prob = NULL){
+sepNMF <- function(dataset, comp_num, weighting = NULL, perturbation = 0.0001, enable_normalization = TRUE, column_sum_normalization = FALSE, screen_prob = NULL, ...){
 
     ## Obtain names for dataset, gene and samples
     dataset_name = datasetNameExtractor(dataset)
@@ -45,7 +46,7 @@ sepNMF <- function(dataset, comp_num, weighting = NULL, perturbation = 0.0001, e
     list_score = list()
 
     for(i in 1 : N){
-        nmf_temp = nmf(dataset[[i]] + perturbation, comp_num[i])
+        nmf_temp = nmf(dataset[[i]] + perturbation, comp_num[i], ...)
         component = nmf_temp@fit@W
         score = nmf_temp@fit@H
         list_component[[i]] = component
