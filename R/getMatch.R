@@ -11,7 +11,7 @@
 #' @param useNewestVersion logical indicating if the function should attempt to use the latest version of ensembl, or to use the May 2025 archive version that is more stable. default is FALSE.
 #' @param mirror a single character value indicating the alternate Ensembl mirror site to use, e.g. "https://useast.ensembl.org" or "https://asia.ensembl.org". This is useful if the primary Ensembl server is down or returning errors. This argument is only used if useNewestVersion=TRUE.
 #'
-#' @importFrom remart useMart getLDS
+#' @importFrom remart getLDS
 #'
 #' @return A matrix whose first column contains the exact gene identifiers (and in the same order) that were sent to the function in the "genes" argument, followed by 3 columns of gene identifiers that were retrieved from biomaRt from both the "inSpecies" and the "newSpecies" (for each species, these 3 identifiers are: gene symbol, ensembl gene ID, and text description).
 #'
