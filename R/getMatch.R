@@ -9,6 +9,7 @@
 #' @param moreAttrIn character vector of other gene attributes that you want returned for the input species from biomaRt - to add this argument you must know the names of the fields in the species-specific biomaRt that you are requesting. default is NA.
 #' @param moreAttrNew character vector of other gene attributes that you want returned for the output species from biomaRt - to add this argument you must know the names of the fields in the species-specific biomaRt that you are requesting. default is NA.
 #' @param useNewestVersion logical indicating if the function should attempt to use the latest version of ensembl, or to use the May 2025 archive version that is more stable. default is FALSE.
+#' @param mirror a single character value indicating the alternate Ensembl mirror site to use, e.g. "https://useast.ensembl.org" or "https://asia.ensembl.org". This is useful if the primary Ensembl server is down or returning errors. This argument is only used if useNewestVersion=TRUE.
 #'
 #' @importFrom biomaRt useMart getLDS
 #'
@@ -27,7 +28,7 @@
 #'
 #' @export
 
-getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FALSE, moreAttrIn = NA, moreAttrNew = NA){
+getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FALSE, moreAttrIn = NA, moreAttrNew = NA, mirror = NA){
     species = data.frame(
         species.nm = c("human", "mouse", "roundworm",
                        "fruitfly", "zebrafish", "frog", "chicken", "rat", "guinea pig",
@@ -63,11 +64,13 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FA
     mart.new = species[newSpecies, ]$ensembl.nms
 
     if(useNewestVersion){
-        df.in = useMart(biomart = "ensembl", dataset = mart.in)
-        df.new = useMart(biomart = "ensembl", dataset = mart.new)
+        if(is.na(mirror)){df.in = useMart(biomart = "ensembl", dataset = mart.in)}
+        if(!is.na(mirror)){df.in = useMart(biomart = "ensembl", dataset = mart.in, host = mirror)}
+        if(is.na(mirror)){df.new = useMart(biomart = "ensembl", dataset = mart.new)}
+        if(!is.na(mirror)){df.new = useMart(biomart = "ensembl", dataset = mart.new, host = mirror)}
     }else{
-        df.in = useMart(biomart = "ensembl", dataset = mart.in, host = "https://may2025.archive.ensembl.org")
-        df.new = useMart(biomart = "ensembl", dataset = mart.new, host = "https://may2025.archive.ensembl.org")
+        if(is.na(mirror)){df.in = useMart(biomart = "ensembl", dataset = mart.in, host = "https://jun2026.archive.ensembl.org")}
+        if(is.na(mirror)){df.new = useMart(biomart = "ensembl", dataset = mart.new, host = "https://jun2026.archive.ensembl.org")}
     }
 
     symbol.in = as.character(species[inSpecies, "genesymbol.attr"])
