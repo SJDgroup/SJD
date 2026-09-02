@@ -83,11 +83,6 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FA
     cat("We found ", dim(tbl.match)[1], " matches\n")
     cat(sum(duplicated(tbl.match[, 1])), " of those are duplicates and only keeping the 1st of each\n")
     rownames(tbl.match) = NULL
-
-print(str(genes))
-print(str(tbl.match))
-print(rownames(tbl.match))
-
     tbl.match = cbind(genes, tbl.match, stringsAsFactors = FALSE)
 	
     return(tbl.match)
