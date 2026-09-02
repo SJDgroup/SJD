@@ -8,8 +8,6 @@
 #' @param newSpecies a character vector indicating the species for which orthologous gene identifiers are desired; must be one of: "human", "mouse", "roundworm", "fruitfly", "zebrafish", "chicken", "rat", "guinea pig", "golden hamster", "rabbit", "pig", "sheep", "cow", "dog", "cat", "macaque", "bonobo", "chimpanzee"
 #' @param moreAttrIn character vector of other gene attributes that you want returned for the input species from biomaRt - to add this argument you must know the names of the fields in the species-specific biomaRt that you are requesting. default is NA.
 #' @param moreAttrNew character vector of other gene attributes that you want returned for the output species from biomaRt - to add this argument you must know the names of the fields in the species-specific biomaRt that you are requesting. default is NA.
-#' @param useNewestVersion logical indicating if the function should attempt to use the latest version of ensembl, or to use the May 2025 archive version that is more stable. default is FALSE.
-#' @param mirror a single character value indicating the alternate Ensembl mirror site to use, e.g. "https://useast.ensembl.org" or "https://asia.ensembl.org". This is useful if the primary Ensembl server is down or returning errors. This argument is only used if useNewestVersion=TRUE.
 #'
 #' @importFrom remart getLDS getBM
 #'
@@ -42,16 +40,6 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FA
                           "ovis aries", "bos taurus", "canis lupus familiaris",
                           "felis catus", "macaca mulatta", "pan paniscus", "pan troglodytes","Mustela putorius furo")
 		, row.names = 1)
-
-    # if(useNewestVersion){
-        # if(is.na(mirror)){df.in = useMart(biomart = "ensembl", dataset = mart.in)}
-        # if(!is.na(mirror)){df.in = useMart(biomart = "ensembl", dataset = mart.in, host = mirror)}
-        # if(is.na(mirror)){df.new = useMart(biomart = "ensembl", dataset = mart.new)}
-        # if(!is.na(mirror)){df.new = useMart(biomart = "ensembl", dataset = mart.new, host = mirror)}
-    # }else{
-        # if(is.na(mirror)){df.in = useMart(biomart = "ensembl", dataset = mart.in, host = "https://jun2026.archive.ensembl.org")}
-        # if(is.na(mirror)){df.new = useMart(biomart = "ensembl", dataset = mart.new, host = "https://jun2026.archive.ensembl.org")}
-    # }
 		
     if (inType == "symbol") {filter = "external_gene_name"}
     else if (inType == "ensembl") {filter = "ensembl_gene_id"}
@@ -65,7 +53,7 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FA
     
     Ngs=length(genes)
 	Nks=ceiling(Ngs/1000)#number of 1k chunks we need to send becasue Ensembl REST API allows only 1k requests!!!!????
-	cat("N genes =", Ngs,", so sending", Nks, "chunks of 1,000 genes to Ensembl REST API via remart (1k is the limit)\n")
+	cat("N genes =", Ngs,", so sending", Nks, "chunks of 1,000 genes to Ensembl REST API via remart (1k is the limit). This may take a while ...\n")
 	
 	if(inSpecies!=newSpecies){
 		if(length(genes)<=1000){tbl.match = getLDS(attributes = atb.in, species = inSpecies, filters = filter, values = genes, speciesL = newSpecies, attributesL = atb.new)}
@@ -89,8 +77,7 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FA
 		}
 	}
 
-	mts=dim(tbl.match)[1]
-    cat("We found ", mts, " matches\n")
+    cat("We found ", dim(tbl.match)[1], " matches\n")
 	
     if(forceINPUTorder1to1){
 		if(inType=="symbol"){indx=match(genes,tbl.match[,"external_gene_name"])}
@@ -106,7 +93,7 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FA
     	colnames(tbl.match)[(length(atb.in) + 1):(length(atb.in) + length(atb.new))] = paste0(colnames(tbl.match)[(length(atb.in) + 1):(length(atb.in) + length(atb.new))], ".", newSpecies)
 	}
 
-	#have to do some more work and link to "!forceINPUTorder1to1" above to say this
+	##### have to do some more work and link to "!forceINPUTorder1to1" above to say this:
     #cat(sum(duplicated(tbl.match[, 1])), " of those are duplicates and only keeping the 1st of each\n")
 	
     rownames(tbl.match) = NULL
