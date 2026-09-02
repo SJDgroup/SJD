@@ -8,6 +8,7 @@
 #' @param newSpecies a character vector indicating the species for which orthologous gene identifiers are desired; must be one of: "human", "mouse", "roundworm", "fruitfly", "zebrafish", "chicken", "rat", "guinea pig", "golden hamster", "rabbit", "pig", "sheep", "cow", "dog", "cat", "macaque", "bonobo", "chimpanzee"
 #' @param moreAttrIn character vector of other gene attributes that you want returned for the input species from biomaRt - to add this argument you must know the names of the fields in the species-specific biomaRt that you are requesting. default is NA.
 #' @param moreAttrNew character vector of other gene attributes that you want returned for the output species from biomaRt - to add this argument you must know the names of the fields in the species-specific biomaRt that you are requesting. default is NA.
+#' @param forceINPUTorder1to1 logical indicating if you want the result to be in the same order + structure as the "genes" input. TRUE by default.
 #'
 #' @importFrom remart getLDS getBM
 #'
@@ -26,7 +27,7 @@
 #'
 #' @export
 
-getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FALSE, moreAttrIn = NA, moreAttrNew = NA, mirror = NA, forceINPUTorder1to1=TRUE){
+getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FALSE, moreAttrIn = NA, moreAttrNew = NA, forceINPUTorder1to1=TRUE){
 
 	species = data.frame(
         species.nm = c("human", "mouse", "roundworm",
