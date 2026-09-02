@@ -31,7 +31,7 @@ jobs:
         with:
           error-on: '"error"'
           build_args: 'c("--no-build-vignettes")'
-          args: 'c("--no-vignettes")'
+          args: 'c("--no-vignettes", "--no-manual")'
 
       - name: Show testthat output
         if: always()
