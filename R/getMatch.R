@@ -93,10 +93,10 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FA
     #tbl.match = getLDS(attributes = atb.in, mart = df.in, filters = filter,
     #                   values = genes, martL = df.new, attributesL = atb.new)
 	
-    if(inSpecies!=inSpecies){tbl.match = getLDS(attributes = atb.in, species = inSpecies, filters = filter,
+    if(inSpecies!=newSpecies){tbl.match = getLDS(attributes = atb.in, species = inSpecies, filters = filter,
                        values = genes, speciesL = newSpecies, attributesL = atb.new)}
 	
-    if(inSpecies==inSpecies){tbl.match = getBM(attributes = atb.in, species = inSpecies, filters = filter,
+    if(inSpecies==newSpecies){tbl.match = getBM(attributes = atb.in, species = inSpecies, filters = filter,
                        values = genes)}
 	
     tbl.match[, "Gene.description"] = gsub(" \\[.*", "", tbl.match[,
