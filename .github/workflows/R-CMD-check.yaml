@@ -30,7 +30,7 @@ jobs:
       - uses: r-lib/actions/check-r-package@v2
         with:
           error-on: '"error"'
-          args: '"--no-build-vignettes" "--no-vignettes"'
+          args: 'c("--no-build-vignettes", "--no-vignettes")'
 
       - name: Show testthat output
         if: always()
