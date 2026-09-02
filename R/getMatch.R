@@ -12,7 +12,6 @@
 #' @param mirror a single character value indicating the alternate Ensembl mirror site to use, e.g. "https://useast.ensembl.org" or "https://asia.ensembl.org". This is useful if the primary Ensembl server is down or returning errors. This argument is only used if useNewestVersion=TRUE.
 #'
 #' @importFrom remart useMart getLDS
-#' @importFrom curl options
 #'
 #' @return A matrix whose first column contains the exact gene identifiers (and in the same order) that were sent to the function in the "genes" argument, followed by 3 columns of gene identifiers that were retrieved from biomaRt from both the "inSpecies" and the "newSpecies" (for each species, these 3 identifiers are: gene symbol, ensembl gene ID, and text description).
 #'
@@ -30,9 +29,6 @@
 #' @export
 
 getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FALSE, moreAttrIn = NA, moreAttrNew = NA, mirror = NA){
-
-    options(http_version = 2) 
-    
     species = data.frame(
         species.nm = c("human", "mouse", "roundworm",
                        "fruitfly", "zebrafish", "frog", "chicken", "rat", "guinea pig",
@@ -44,14 +40,14 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FA
                           "melanochromis auratus", "oryctolagus cuniculus", "sus scrofa domesticus",
                           "ovis aries", "bos taurus", "canis lupus familiaris",
                           "felis catus", "macaca mulatta", "pan paniscus", "pan troglodytes","Mustela putorius furo"),
-        ensembl.nms = c("hsapiens_gene_ensembl", "mmusculus_gene_ensembl",
-                        "celegans_gene_ensembl", "dmelanogaster_gene_ensembl",
-                        "drerio_gene_ensembl", "xtropicalis_gene_ensembl", "ggallus_gene_ensembl", "rnorvegicus_gene_ensembl",
-                        "cporcellus_gene_ensembl", "mauratus_gene_ensembl",
-                        "ocuniculus_gene_ensembl", "sscrofa_gene_ensembl",
-                        "oaries_gene_ensembl", "btaurus_gene_ensembl", "clfamiliaris_gene_ensembl",
-                        "fcatus_gene_ensembl", "mmulatta_gene_ensembl", "ppaniscus_gene_ensembl",
-                        "ptroglodytes_gene_ensembl","mpfuro_gene_ensembl"),
+        # ensembl.nms = c("hsapiens_gene_ensembl", "mmusculus_gene_ensembl",
+                        # "celegans_gene_ensembl", "dmelanogaster_gene_ensembl",
+                        # "drerio_gene_ensembl", "xtropicalis_gene_ensembl", "ggallus_gene_ensembl", "rnorvegicus_gene_ensembl",
+                        # "cporcellus_gene_ensembl", "mauratus_gene_ensembl",
+                        # "ocuniculus_gene_ensembl", "sscrofa_gene_ensembl",
+                        # "oaries_gene_ensembl", "btaurus_gene_ensembl", "clfamiliaris_gene_ensembl",
+                        # "fcatus_gene_ensembl", "mmulatta_gene_ensembl", "ppaniscus_gene_ensembl",
+                        # "ptroglodytes_gene_ensembl","mpfuro_gene_ensembl"),
  #       genesymbol.attr = c("hgnc_symbol",
  #                           "mgi_symbol", "external_gene_name", "external_gene_name",
  #                           "hgnc_symbol", "hgnc_symbol", "hgnc_symbol", "external_gene_name",
@@ -64,19 +60,19 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FA
                             "external_gene_name", "external_gene_name", "external_gene_name", "external_gene_name",
                             "external_gene_name", "external_gene_name", "external_gene_name", "external_gene_name",
                             "external_gene_name", "external_gene_name", "external_gene_name","external_gene_name"), row.names = 1)
-    mart.in = species[inSpecies, ]$ensembl.nms
-    mart.new = species[newSpecies, ]$ensembl.nms
+    # mart.in = species[inSpecies, ]$ensembl.nms
+    # mart.new = species[newSpecies, ]$ensembl.nms
 
-    if(useNewestVersion){
-        if(is.na(mirror)){df.in = useMart(biomart = "ensembl", dataset = mart.in)}
-        if(!is.na(mirror)){df.in = useMart(biomart = "ensembl", dataset = mart.in, host = mirror)}
-        if(is.na(mirror)){df.new = useMart(biomart = "ensembl", dataset = mart.new)}
-        if(!is.na(mirror)){df.new = useMart(biomart = "ensembl", dataset = mart.new, host = mirror)}
-    }else{
-        if(is.na(mirror)){df.in = useMart(biomart = "ensembl", dataset = mart.in, host = "https://jun2026.archive.ensembl.org")}
-        if(is.na(mirror)){df.new = useMart(biomart = "ensembl", dataset = mart.new, host = "https://jun2026.archive.ensembl.org")}
-    }
-
+    # if(useNewestVersion){
+        # if(is.na(mirror)){df.in = useMart(biomart = "ensembl", dataset = mart.in)}
+        # if(!is.na(mirror)){df.in = useMart(biomart = "ensembl", dataset = mart.in, host = mirror)}
+        # if(is.na(mirror)){df.new = useMart(biomart = "ensembl", dataset = mart.new)}
+        # if(!is.na(mirror)){df.new = useMart(biomart = "ensembl", dataset = mart.new, host = mirror)}
+    # }else{
+        # if(is.na(mirror)){df.in = useMart(biomart = "ensembl", dataset = mart.in, host = "https://jun2026.archive.ensembl.org")}
+        # if(is.na(mirror)){df.new = useMart(biomart = "ensembl", dataset = mart.new, host = "https://jun2026.archive.ensembl.org")}
+    # }
+	
     symbol.in = as.character(species[inSpecies, "genesymbol.attr"])
     symbol.new = as.character(species[newSpecies, "genesymbol.attr"])
     if (inType == "symbol") {
@@ -94,8 +90,10 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FA
     if (!is.na(moreAttrNew)) {
         atb.new = c(atb.new, moreAttrNew)
     }
-    tbl.match = getLDS(attributes = atb.in, mart = df.in, filters = filter,
-                       values = genes, martL = df.new, attributesL = atb.new)
+    #tbl.match = getLDS(attributes = atb.in, mart = df.in, filters = filter,
+    #                   values = genes, martL = df.new, attributesL = atb.new)
+    tbl.match = getLDS(attributes = atb.in, species = species[inSpecies, ]$species.nm, filters = filter,
+                       values = genes, speciesL = species[newSpecies, ]$species.nm, attributesL = atb.new)
     tbl.match[, "Gene.description"] = gsub(" \\[.*", "", tbl.match[,
                                                                    "Gene.description"])
     tbl.match[, "Gene.description.1"] = gsub(" \\[.*", "", tbl.match[,
