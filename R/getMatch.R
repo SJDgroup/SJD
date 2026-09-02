@@ -62,9 +62,32 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FA
 	
     if (!is.na(moreAttrIn)) {atb.in = c(atb.in, moreAttrIn)}
     if (!is.na(moreAttrNew)) {atb.new = c(atb.new, moreAttrNew)}
-    	
-    if(inSpecies!=newSpecies){tbl.match = getLDS(attributes = atb.in, species = inSpecies, filters = filter, values = genes, speciesL = newSpecies, attributesL = atb.new)}
-	if(inSpecies==newSpecies){tbl.match = getBM(attributes = atb.in, species = inSpecies, filters = filter, values = genes)}
+    
+    Ngs=length(genes)
+	Nks=ceiling(Ngs/1000)#number of 1k chunks we need to send becasue Ensembl REST API allows only 1k requests!!!!????
+	cat("N genes = ", Ngs,", so sending ", Nks, " chunks of 1,000 genes to Ensembl REST API via remart (1k is the limit - why? i dont know.)")
+	
+	if(inSpecies!=newSpecies){
+		if(length(genes)<=1000){tbl.match = getLDS(attributes = atb.in, species = inSpecies, filters = filter, values = genes, speciesL = newSpecies, attributesL = atb.new)}
+		if(length(genes)>1000){
+			for(ii in 1:Nks){
+				if(ii==1){tbl.match = getLDS(attributes = atb.in, species = inSpecies, filters = filter, values = genes[1:1000], speciesL = newSpecies, attributesL = atb.new)}
+				if(ii>1 & ii<Nks){tbl.match=rbind(tbl.match,getLDS(attributes = atb.in, species = inSpecies, filters = filter, values = genes[((Nks*ii)-999):(Nks*ii)], speciesL = newSpecies, attributesL = atb.new))}
+				if(ii==Nks){tbl.match=rbind(tbl.match,getLDS(attributes = atb.in, species = inSpecies, filters = filter, values = genes[((Nks*ii)-999):Ngs], speciesL = newSpecies, attributesL = atb.new))}
+				}
+		}
+	}
+	
+	if(inSpecies==newSpecies){
+		if(length(genes)<=1000){tbl.match = getBM(attributes = atb.in, species = inSpecies, filters = filter, values = genes)}
+		if(length(genes)>1000){
+			for(ii in 1:Nks){
+				if(ii==1){tbl.match = getBM(attributes = atb.in, species = inSpecies, filters = filter, values = genes[1:1000])}
+				if(ii>1 & ii<Nks){tbl.match=rbind(tbl.match,getBM(attributes = atb.in, species = inSpecies, filters = filter, values = genes[((Nks*ii)-999):(Nks*ii)]))}
+				if(ii==Nks){tbl.match=rbind(tbl.match,getBM(attributes = atb.in, species = inSpecies, filters = filter, values = genes[((Nks*ii)-999):Ngs]))}
+				}
+		}
+	}
 	
     if(forceINPUTorder1to1){
 		if(inType=="symbol"){indx=match(genes,tbl.match[,"external_gene_name"])}
