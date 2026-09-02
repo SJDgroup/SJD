@@ -72,14 +72,15 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FA
 		tbl.match=tbl.match[indx,]
 	}
 	if(!forceINPUTorder1to1){cat("not yet implemented - this could be useful for many to one mappings such as fish to mammal.")}
-
+cat("01")
 	tbl.match[, "Gene.description"] = gsub(" \\[.*", "", tbl.match[, "Gene.description"])
     tbl.match[, "Gene.description.1"] = gsub(" \\[.*", "", tbl.match[, "Gene.description.1"])
+cat("02")
     if(inSpecies!=newSpecies){
 		colnames(tbl.match)[1:length(atb.in)] = paste0(colnames(tbl.match)[1:length(atb.in)], ".", inSpecies)
     	colnames(tbl.match)[(length(atb.in) + 1):(length(atb.in) + length(atb.new))] = paste0(colnames(tbl.match)[(length(atb.in) + 1):(length(atb.in) + length(atb.new))], ".", newSpecies)
 	}
-	
+cat("03")
     cat("We found ", dim(tbl.match)[1], " matches\n")
     cat(sum(duplicated(tbl.match[, 1])), " of those are duplicates and only keeping the 1st of each\n")
     if (inType == "symbol") {
