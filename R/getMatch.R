@@ -73,6 +73,7 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FA
 	}
 	if(!forceINPUTorder1to1){cat("not yet implemented - this could be useful for many to one mappings such as fish to mammal.")}
 cat("01")
+cat(str(tbl.match))
 	tbl.match[, "Gene.description"] = gsub(" \\[.*", "", tbl.match[, "Gene.description"])
     tbl.match[, "Gene.description.1"] = gsub(" \\[.*", "", tbl.match[, "Gene.description.1"])
 cat("02")
