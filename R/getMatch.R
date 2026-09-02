@@ -103,6 +103,7 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FA
 		if(inType=="symbol"){indx=match(genes,tbl.match[,"external_gene_name"])}
 		if(inType=="ensembl"){indx=match(genes,tbl.match[,"ensembl_gene_id"])}
 		tbl.match=tbl.match[indx,]
+		cat(indx)
 	}
 	if(!forceINPUTorder1to1){cat("not yet implemented - this could be useful for many to one mappings such as fish to mammal.")}
 	
