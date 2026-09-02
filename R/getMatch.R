@@ -30,8 +30,6 @@
 
 getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FALSE, moreAttrIn = NA, moreAttrNew = NA, mirror = NA, forceINPUTorder1to1=TRUE){
 
-	cat("begin!")
-
 	species = data.frame(
         species.nm = c("human", "mouse", "roundworm",
                        "fruitfly", "zebrafish", "frog", "chicken", "rat", "guinea pig",
@@ -67,19 +65,18 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FA
     	
     if(inSpecies!=newSpecies){tbl.match = getLDS(attributes = atb.in, species = inSpecies, filters = filter, values = genes, speciesL = newSpecies, attributesL = atb.new)}
 	if(inSpecies==newSpecies){tbl.match = getBM(attributes = atb.in, species = inSpecies, filters = filter, values = genes)}
-
-	cat("hola00")
 	
     if(forceINPUTorder1to1){
 		if(inType=="symbol"){indx=match(genes,tbl.match[,"external_gene_name"])}
 		if(inType=="ensembl"){indx=match(genes,tbl.match[,"ensembl_gene_id"])}
 		tbl.match=tbl.match[indx,]
-		print(indx);cat("hola")
 	}
 	if(!forceINPUTorder1to1){cat("not yet implemented - this could be useful for many to one mappings such as fish to mammal.")}
-	
-    tbl.match[, "Gene.description"] = gsub(" \\[.*", "", tbl.match[, "Gene.description"])
-    tbl.match[, "Gene.description.1"] = gsub(" \\[.*", "", tbl.match[, "Gene.description.1"])
+
+	print(str(tbl.match))
+
+	#tbl.match[, "Gene.description"] = gsub(" \\[.*", "", tbl.match[, "Gene.description"])
+    #tbl.match[, "Gene.description.1"] = gsub(" \\[.*", "", tbl.match[, "Gene.description.1"])
     colnames(tbl.match)[1:length(atb.in)] = paste0(colnames(tbl.match)[1:length(atb.in)], ".", inSpecies)
     colnames(tbl.match)[(length(atb.in) + 1):(length(atb.in) +
                                                   length(atb.new))] = paste0(colnames(tbl.match)[(length(atb.in) +
