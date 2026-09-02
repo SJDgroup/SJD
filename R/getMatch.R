@@ -28,7 +28,7 @@
 #'
 #' @export
 
-getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FALSE, moreAttrIn = NA, moreAttrNew = NA, mirror = NA){
+getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FALSE, moreAttrIn = NA, moreAttrNew = NA, mirror = NA, forceINPUTorder1to1=TRUE){
     species = data.frame(
         species.nm = c("human", "mouse", "roundworm",
                        "fruitfly", "zebrafish", "frog", "chicken", "rat", "guinea pig",
@@ -98,6 +98,13 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FA
 	
     if(inSpecies==newSpecies){tbl.match = getBM(attributes = atb.in, species = inSpecies, filters = filter,
                        values = genes)}
+
+    if(forceINPUTorder1to1){
+		if(inType=="symbol"){indx=match(genes,tbl.match[,"external_gene_name"])}
+		if(inType=="ensembl"){indx=match(genes,tbl.match[,"ensembl_gene_id"])}
+		tbl.match=tbl.match[indx,]
+	}
+	if(!forceINPUTorder1to1){cat("not yet implemented - this could be useful for many to one mappings such as fish to mammal.")}
 	
     tbl.match[, "Gene.description"] = gsub(" \\[.*", "", tbl.match[,
                                                                    "Gene.description"])
