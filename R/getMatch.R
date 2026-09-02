@@ -12,6 +12,7 @@
 #' @param mirror a single character value indicating the alternate Ensembl mirror site to use, e.g. "https://useast.ensembl.org" or "https://asia.ensembl.org". This is useful if the primary Ensembl server is down or returning errors. This argument is only used if useNewestVersion=TRUE.
 #'
 #' @importFrom remart useMart getLDS
+#' @importFrom curl options
 #'
 #' @return A matrix whose first column contains the exact gene identifiers (and in the same order) that were sent to the function in the "genes" argument, followed by 3 columns of gene identifiers that were retrieved from biomaRt from both the "inSpecies" and the "newSpecies" (for each species, these 3 identifiers are: gene symbol, ensembl gene ID, and text description).
 #'
@@ -29,6 +30,9 @@
 #' @export
 
 getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FALSE, moreAttrIn = NA, moreAttrNew = NA, mirror = NA){
+
+    options(http_version = 2) 
+    
     species = data.frame(
         species.nm = c("human", "mouse", "roundworm",
                        "fruitfly", "zebrafish", "frog", "chicken", "rat", "guinea pig",
