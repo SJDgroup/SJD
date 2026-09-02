@@ -65,7 +65,7 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FA
     
     Ngs=length(genes)
 	Nks=ceiling(Ngs/1000)#number of 1k chunks we need to send becasue Ensembl REST API allows only 1k requests!!!!????
-	cat("N genes = ", Ngs,", so sending ", Nks, " chunks of 1,000 genes to Ensembl REST API via remart (1k is the limit - why? i dont know.)")
+	cat("N genes =", Ngs,", so sending", Nks, "chunks of 1,000 genes to Ensembl REST API via remart (1k is the limit)\n")
 	
 	if(inSpecies!=newSpecies){
 		if(length(genes)<=1000){tbl.match = getLDS(attributes = atb.in, species = inSpecies, filters = filter, values = genes, speciesL = newSpecies, attributesL = atb.new)}
@@ -88,13 +88,16 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FA
 				}
 		}
 	}
+
+	mts=dim(tbl.match)[1]
+    cat("We found ", mts, " matches\n")
 	
     if(forceINPUTorder1to1){
 		if(inType=="symbol"){indx=match(genes,tbl.match[,"external_gene_name"])}
 		if(inType=="ensembl"){indx=match(genes,tbl.match[,"ensembl_gene_id"])}
 		tbl.match=tbl.match[indx,]
 	}
-	if(!forceINPUTorder1to1){cat("!forceINPUTorder1to1 - not yet implemented - this could be useful for many to one mappings such as fish to mammal.")}
+	if(!forceINPUTorder1to1){cat("!forceINPUTorder1to1 - not yet implemented - this could be useful for many to one mappings such as fish to mammal.\n")}
 
 	tbl.match[, "description"] = gsub(" \\[.*", "", tbl.match[, "description"])
     if(inSpecies!=newSpecies){
@@ -103,8 +106,9 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FA
     	colnames(tbl.match)[(length(atb.in) + 1):(length(atb.in) + length(atb.new))] = paste0(colnames(tbl.match)[(length(atb.in) + 1):(length(atb.in) + length(atb.new))], ".", newSpecies)
 	}
 
-    cat("We found ", dim(tbl.match)[1], " matches\n")
-    cat(sum(duplicated(tbl.match[, 1])), " of those are duplicates and only keeping the 1st of each\n")
+	#have to do some more work and link to "!forceINPUTorder1to1" above to say this
+    #cat(sum(duplicated(tbl.match[, 1])), " of those are duplicates and only keeping the 1st of each\n")
+	
     rownames(tbl.match) = NULL
     tbl.match = cbind(genes, tbl.match, stringsAsFactors = FALSE)
 	
