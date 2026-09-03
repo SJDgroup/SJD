@@ -36,14 +36,14 @@ A matrix whose first column contains the exact gene identifiers (and in the same
 Use biomaRt to retrieve additional gene identifiers for a vector of gene identifiers in one species (e.g. 'human'), or gene identifiers for orthologous genes in a second species (e.g. 'mouse')
 }
 \examples{
-
+\dontrun{
 data(NeuroGenesis4)
 out = getMatch(
 rownames(NeuroGenesis4$Meissner.inVitro.bulk.Hs),
 inSpecies = 'human',
 inType = 'symbol',
 newSpecies = 'mouse')
-
+}
 }
 \keyword{genes}
 \keyword{shared}
