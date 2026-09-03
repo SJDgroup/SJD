@@ -17,13 +17,15 @@
 #' @keywords shared genes
 #'
 #' @examples
-#'
+#' \dontrun{
 #' data(NeuroGenesis4)
 #' out = getMatch(
-#' rownames(NeuroGenesis4$Meissner.inVitro.bulk.Hs),
-#' inSpecies = 'human',
-#' inType = 'symbol',
-#' newSpecies = 'mouse')
+#'   rownames(NeuroGenesis4$Meissner.inVitro.bulk.Hs),
+#'   inSpecies = 'human',
+#'   inType = 'symbol',
+#'   newSpecies = 'mouse'
+#' )
+#' }
 #'
 #' @export
 
