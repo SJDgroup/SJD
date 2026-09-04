@@ -11,7 +11,7 @@ sepNMF(
   perturbation = 1e-04,
   enable_normalization = TRUE,
   column_sum_normalization = FALSE,
-  screen_prob = NULL
+  screen_prob = NULL, ...
 )
 }
 \arguments{
@@ -28,6 +28,8 @@ sepNMF(
 \item{column_sum_normalization}{An argument to decide whether to use column sum normalization or not, default it FALSE}
 
 \item{screen_prob}{A vector of probabilies for genes to be chosen}
+
+\item{...}{extra arguments passed to NMF::nmf, which can be used to specify optimization parameters}
 }
 \value{
 A list of scores and component
