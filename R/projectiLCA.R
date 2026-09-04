@@ -19,6 +19,7 @@
 #' @keywords projection, twoStageiLCA, iLCA
 #'
 #' @examples
+#' \dontrun{
 #' proj_dataset = list(matrix(runif(5000, 1, 2), nrow = 100, ncol = 50))
 #' proj_group = c(TRUE, TRUE) # which groupings in the twoStageiLCA analysis you want to project on.
 #' list_component = twoStageiLCA_res$linked_component_list # from twoStageiLCA result
@@ -28,7 +29,7 @@
 #' proj_group = proj_group,
 #' list_component = list_component,
 #' ica_score = ica_score)
-#' 
+#' }
 #' 
 #' 
 #' @export
