@@ -9,6 +9,7 @@
 #' @param moreAttrIn character vector of other gene attributes that you want returned for the input species from biomaRt - to add this argument you must know the names of the fields in the species-specific biomaRt that you are requesting. default is NA.
 #' @param moreAttrNew character vector of other gene attributes that you want returned for the output species from biomaRt - to add this argument you must know the names of the fields in the species-specific biomaRt that you are requesting. default is NA.
 #' @param forceINPUTorder1to1 logical indicating if you want the result to be in the same order + structure as the "genes" input. TRUE by default.
+#' @param useNewestVersion logical no longer used after remart took over biomaRt function
 #'
 #' @importFrom remart getLDS getBM
 #'
@@ -29,7 +30,7 @@
 #'
 #' @export
 
-getMatch <- function(genes, inSpecies, inType, newSpecies, moreAttrIn = NA, moreAttrNew = NA, forceINPUTorder1to1=TRUE){
+getMatch <- function(genes, inSpecies, inType, newSpecies, moreAttrIn = NA, moreAttrNew = NA, forceINPUTorder1to1=TRUE,useNewestVersion=NA){
 
 	species = data.frame(
         species.nm = c("human", "mouse", "roundworm",
