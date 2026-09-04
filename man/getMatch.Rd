@@ -28,6 +28,8 @@ getMatch(
 \item{moreAttrIn}{character vector of other gene attributes that you want returned for the input species from biomaRt - to add this argument you must know the names of the fields in the species-specific biomaRt that you are requesting. default is NA.}
 
 \item{moreAttrNew}{character vector of other gene attributes that you want returned for the output species from biomaRt - to add this argument you must know the names of the fields in the species-specific biomaRt that you are requesting. default is NA.}
+
+\item{forceINPUTorder1to1}{logical indicating if you want the result to be in the same order + structure as the "genes" input. TRUE by default.}
 }
 \value{
 A matrix whose first column contains the exact gene identifiers (and in the same order) that were sent to the function in the "genes" argument, followed by 3 columns of gene identifiers that were retrieved from biomaRt from both the "inSpecies" and the "newSpecies" (for each species, these 3 identifiers are: gene symbol, ensembl gene ID, and text description).
