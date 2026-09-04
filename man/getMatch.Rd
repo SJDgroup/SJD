@@ -9,9 +9,9 @@ getMatch(
   inSpecies,
   inType,
   newSpecies,
-  forceINPUTorder1to1=TRUE,
   moreAttrIn = NA,
-  moreAttrNew = NA
+  moreAttrNew = NA,
+  forceINPUTorder1to1=TRUE
 )
 }
 \arguments{
