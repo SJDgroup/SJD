@@ -43,7 +43,7 @@ list_component should be jointNMF$linked_component_list from the jointNMF result
 }
 \examples{
 proj_dataset = matrix(runif(5000, 1, 2), nrow = 100, ncol = 50)
-proj_group = c(TRUE, TRUE) # which groupings in the joint decomposition you want to project on.
+proj_group = c(TRUE, TRUE)
 list_component = list(matrix(runif(600, 1, 2), nrow = 100, ncol = 6), matrix(runif(200, 1, 2), nrow = 100, ncol = 2))
 res_projNMF = projectNMF(
 proj_dataset = proj_dataset,

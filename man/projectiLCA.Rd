@@ -43,6 +43,7 @@ or set of matrices (e.g. the "list_component" from a twoStageiLCA output object)
 PLEASE MAKE SURE YOUR proj_dataset AND list_component ELEMENTS HAVE MEANINGFUL ROW(GENE) NAMES - they are matched across matrices for the projection.
 }
 \examples{
+\dontrun{
 proj_dataset = list(matrix(runif(5000, 1, 2), nrow = 100, ncol = 50))
 proj_group = c(TRUE, TRUE) # which groupings in the twoStageiLCA analysis you want to project on.
 list_component = twoStageiLCA_res$linked_component_list # from twoStageiLCA result
@@ -52,7 +53,7 @@ proj_dataset = proj_dataset,
 proj_group = proj_group,
 list_component = list_component,
 ica_score = ica_score)
-
+}
 
 
 }

@@ -62,12 +62,16 @@ import(ggplot2)
 import(plotrix)
 importFrom(MASS,mvrnorm)
 importFrom(NMF,nmf)
-importFrom(RMTstat,qmp)
-importFrom(RMTstat,qtw)
+importFrom(RMTstat,
+  qmp,
+  qtw
+)
 importFrom(RSpectra,svds)
-importFrom(remart,getLDS)
-importFrom(remart,getBM)
 importFrom(dplyr,inner_join)
 importFrom(fastICA,fastICA)
+importFrom(remart,
+  getBM,
+  getLDS
+)
 importFrom(stats,runif)
 importFrom(stringr,str_detect)

@@ -11,11 +11,12 @@ sepNMF(
   perturbation = 1e-04,
   enable_normalization = TRUE,
   column_sum_normalization = FALSE,
-  screen_prob = NULL, ...
+  screen_prob = NULL,
+  ...
 )
 }
 \arguments{
-\item{dataset}{A dataframe/matrix to be decomposed}
+\item{dataset}{A list of one element containing the dataframe/matrix to be decomposed}
 
 \item{comp_num}{Number of NMFs to be extracted}
 
