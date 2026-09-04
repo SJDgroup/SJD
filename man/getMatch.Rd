@@ -9,7 +9,7 @@ getMatch(
   inSpecies,
   inType,
   newSpecies,
-  useNewestVersion = FALSE,
+  forceINPUTorder1to1=TRUE,
   moreAttrIn = NA,
   moreAttrNew = NA
 )
@@ -22,8 +22,6 @@ getMatch(
 \item{inType}{a single character value indicating the type of gene identifiers being passed in the "genes" argument; must be one of: "symbol", "ensembl"}
 
 \item{newSpecies}{a character vector indicating the species for which orthologous gene identifiers are desired; must be one of: "human", "mouse", "roundworm", "fruitfly", "zebrafish", "chicken", "rat", "guinea pig", "golden hamster", "rabbit", "pig", "sheep", "cow", "dog", "cat", "macaque", "bonobo", "chimpanzee"}
-
-\item{useNewestVersion}{logical indicating if the function should attempt to use the latest version of ensembl, or to use the May 2025 archive version that is more stable. default is FALSE.}
 
 \item{moreAttrIn}{character vector of other gene attributes that you want returned for the input species from biomaRt - to add this argument you must know the names of the fields in the species-specific biomaRt that you are requesting. default is NA.}
 
