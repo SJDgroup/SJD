@@ -29,7 +29,7 @@
 #'
 #' @export
 
-getMatch <- function(genes, inSpecies, inType, newSpecies, useNewestVersion = FALSE, moreAttrIn = NA, moreAttrNew = NA, forceINPUTorder1to1=TRUE){
+getMatch <- function(genes, inSpecies, inType, newSpecies, moreAttrIn = NA, moreAttrNew = NA, forceINPUTorder1to1=TRUE){
 
 	species = data.frame(
         species.nm = c("human", "mouse", "roundworm",
