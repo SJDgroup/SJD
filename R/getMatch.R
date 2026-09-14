@@ -63,6 +63,7 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, moreAttrIn = NA, more
 		if(length(genes)<=1000){tbl.match = getLDS(attributes = atb.in, species = inSpecies, filters = filter, values = genes, speciesL = newSpecies, attributesL = atb.new)}
 		if(length(genes)>1000){
 			for(ii in 1:Nks){
+				print(ii)
 				if(ii==1){tbl.match = getLDS(attributes = atb.in, species = inSpecies, filters = filter, values = genes[1:1000], speciesL = newSpecies, attributesL = atb.new)}
 				if(ii>1 & ii<Nks){tbl.match=rbind(tbl.match,getLDS(attributes = atb.in, species = inSpecies, filters = filter, values = genes[((1000*ii)-999):(1000*ii)], speciesL = newSpecies, attributesL = atb.new))}
 				if(ii==Nks){tbl.match=rbind(tbl.match,getLDS(attributes = atb.in, species = inSpecies, filters = filter, values = genes[((1000*ii)-999):Ngs], speciesL = newSpecies, attributesL = atb.new))}
@@ -74,6 +75,7 @@ getMatch <- function(genes, inSpecies, inType, newSpecies, moreAttrIn = NA, more
 		if(length(genes)<=1000){tbl.match = getBM(attributes = atb.in, species = inSpecies, filters = filter, values = genes)}
 		if(length(genes)>1000){
 			for(ii in 1:Nks){
+				print(ii)
 				if(ii==1){tbl.match = getBM(attributes = atb.in, species = inSpecies, filters = filter, values = genes[1:1000])}
 				if(ii>1 & ii<Nks){tbl.match=rbind(tbl.match,getBM(attributes = atb.in, species = inSpecies, filters = filter, values = genes[((1000*ii)-999):(1000*ii)]))}
 				if(ii==Nks){tbl.match=rbind(tbl.match,getBM(attributes = atb.in, species = inSpecies, filters = filter, values = genes[((1000*ii)-999):Ngs]))}
