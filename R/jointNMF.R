@@ -113,17 +113,17 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
     }
     
 
-    # scaling
+    # scaling (NOW scaling after rebalancing data)
     # Normalize each full row of H to [0,1] by row max, while preserving W %*% H exactly
-    eps <- 1e-12
-    
-    for (k in 1:nrow(H)) {
-      hk_max <- max(H[k, ])
-      if (hk_max > eps) {
-        H[k, ] <- H[k, ] / hk_max
-        W[, k] <- W[, k] * hk_max
-      }
-    }
+    # eps <- 1e-12
+    # 
+    # for (k in 1:nrow(H)) {
+    #   hk_max <- max(H[k, ])
+    #   if (hk_max > eps) {
+    #     H[k, ] <- H[k, ] / hk_max
+    #     W[, k] <- W[, k] * hk_max
+    #   }
+    # }
     
     W[is.na(W)] = 0
     
