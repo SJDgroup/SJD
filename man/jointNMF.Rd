@@ -19,11 +19,11 @@ jointNMF(
 )
 }
 \arguments{
-\item{dataset}{A list of dataset to be analyzed}
+\item{dataset}{A list of datasets to be analyzed}
 
 \item{group}{A list of grouping of the datasets, indicating the relationship between datasets}
 
-\item{comp_num}{A vector indicates the dimension of each compoent}
+\item{comp_num}{A vector indicates the dimension of each component}
 
 \item{weighting}{Weighting of each dataset, initialized to be NULL}
 

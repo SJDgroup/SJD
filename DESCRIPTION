@@ -35,6 +35,6 @@ Suggests:
     knitr
 VignetteBuilder: knitr
 URL: https://github.com/CHuanSite/SJD
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.0
 Remotes: 
     github::Huber-group-EMBL/remart

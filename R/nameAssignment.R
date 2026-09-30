@@ -17,7 +17,7 @@
 #' scoreNameAssignSep(score_list, dataset_name)
 #'
 #' @export
-#' 
+#'
 scoreNameAssignSep <- function(score_list, dataset_name){
     for(i in 1 : length(score_list)){
         names(score_list)[i] = dataset_name[i]
@@ -40,9 +40,7 @@ scoreNameAssignSep <- function(score_list, dataset_name){
 #' @keywords score, name
 #'
 #' @examples
-#' score_list = list(
-#' list(matrix(c(1 : 4), nrow = 2), matrix(c(1 : 4), nrow = 2)),
-#' list(matrix(c(1 : 4), nrow = 2), matrix(c(1 : 4), nrow = 2)))
+#' score_list = list(matrix(c(1 : 4), nrow = 2), matrix(c(1 : 4), nrow = 2))
 #' group_name = c("comp1", "comp2")
 #' scoreNameAssignProj(score_list, group_name)
 #'
@@ -51,7 +49,9 @@ scoreNameAssignSep <- function(score_list, dataset_name){
 scoreNameAssignProj <- function(score_list, group_name){
   for(i in 1 : length(score_list)){
     names(score_list)[i] = group_name[i]
-    rownames(score_list[[i]]) = sapply(1 : nrow(score_list[[i]]), FUN = function(x){paste0(group_name[i], "_", "subcomp.", x)} )
+    if (!any(is.na(score_list[[i]]))) {
+        rownames(score_list[[i]]) = sapply(1 : nrow(score_list[[i]]), FUN = function(x){paste0(group_name[i], "_", "subcomp.", x)} )
+    }
   }
   return(score_list)
 }

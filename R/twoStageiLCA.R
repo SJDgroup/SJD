@@ -8,7 +8,7 @@
 #' @param weighting Weighting of each dataset, initialized to be NULL
 #' @param backup A positive scalar to determine how many ICs to over select
 #' @param plotting A boolean value to determine whether to plot the scree plot or not, default to be False
-#' @param proj_dataset The dataset(s) to be projected on. 
+#' @param proj_dataset The dataset(s) to be projected on.
 #' @param proj_group A listed of boolean combinations indicating which groupings should be used for each projected dataset.The length of proj_group should match the length of proj_dataset, and the length of each concatenated boolean combination should match the length of the parameter group.
 #' @param enable_normalization An argument to decide whether to use normalizaiton or not,  default is TRUE
 #' @param column_sum_normalization An argument to decide whether to use column sum normalization or not, default it FALSE
@@ -96,17 +96,17 @@ twoStageiLCA <- function(dataset, group, comp_num, weighting = NULL, backup = 0,
         ica_temp = fastICA(t(score_concat), n.comp = nrow(score_concat))
         ica_score[[i]] = ica_temp
         start_index = 0
-        
+
         for(j in 1 : N){
             if(j %in% group[[i]] & nrow(list_score[[j]][[i]]) >= 2){
-              
+
               # NEW SCORES (SAMPLE SCORES) ARE ESTIMATED SOURCE MATRICES X = AS
               list_score[[j]][[i]] = t(ica_temp$S[(start_index + 1) : (start_index + N_dataset[j]), ]) #slice ica result
               start_index = start_index + N_dataset[j]
             }
         }
     }
-        
+
 
     ## Assign name for components
     list_component = compNameAssign(list_component, group_name)
@@ -120,7 +120,7 @@ twoStageiLCA <- function(dataset, group, comp_num, weighting = NULL, backup = 0,
     proj_list_score = list()
     if(!is.null(proj_dataset)){
         proj_sample_name = sampleNameExtractor(proj_dataset)
-        group_name = names(list_component) 
+        group_name = names(list_component)
         proj_dataset = normalizeData(proj_dataset, enable_normalization, column_sum_normalization)
 
         for(j in 1 : length(proj_group)){

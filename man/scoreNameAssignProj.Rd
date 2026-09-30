@@ -20,9 +20,7 @@ the group_name
 is the output of the groupNameExtractor
 }
 \examples{
-score_list = list(
-list(matrix(c(1 : 4), nrow = 2), matrix(c(1 : 4), nrow = 2)),
-list(matrix(c(1 : 4), nrow = 2), matrix(c(1 : 4), nrow = 2)))
+score_list = list(matrix(c(1 : 4), nrow = 2), matrix(c(1 : 4), nrow = 2))
 group_name = c("comp1", "comp2")
 scoreNameAssignProj(score_list, group_name)
 
