@@ -113,8 +113,9 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
     }
 
 
-    # scaling
+    # scaling (NOW scaling after rebalancing data)
     # Normalize each full row of H to [0,1] by row max, while preserving W %*% H exactly
+
     eps <- 1e-12
 
     for (k in 1:nrow(H)) {
@@ -151,6 +152,34 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
     list_score = sampleNameAssign(list_score, sample_name)
     # list_score = filterNAValue(list_score, dataset, group)
     list_score = rebalanceData(list_score, group, dataset)
+
+
+    # Scale each component to [0, 1] across all datasets in that group
+    eps <- 1e-12
+
+    for (i in 1:K) {
+      for (k in 1:comp_num[i]) {
+
+        # Find maximum score for this component across all datasets
+        # participating in this group
+        component_max <- 0
+
+        for (j in group[[i]]) {
+          component_max <- max(
+            component_max,
+            max(list_score[[j]][[i]][k, ], na.rm = TRUE)
+          )
+        }
+
+        # Divide all participating datasets by the SAME maximum
+        if (component_max > eps) {
+          for (j in group[[i]]) {
+            list_score[[j]][[i]][k, ] <-
+              list_score[[j]][[i]][k, ] / component_max
+          }
+        }
+      }
+    }
 
     # WE DON'T USE ANYMORE
     # for(i in 1 : K){
