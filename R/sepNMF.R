@@ -45,12 +45,33 @@ sepNMF <- function(dataset, comp_num, weighting = NULL, perturbation = 0.0001, e
     list_component = list()
     list_score = list()
 
-    for(i in 1 : N){
-        nmf_temp = nmf(dataset[[i]] + perturbation, comp_num[i], ...)
-        component = nmf_temp@fit@W
-        score = nmf_temp@fit@H
-        list_component[[i]] = component
-        list_score[[i]] = score
+    for(i in 1:N){
+      
+      nmf_temp = nmf(dataset[[i]] + perturbation, comp_num[i], ...)
+      
+      component = nmf_temp@fit@W
+      score = nmf_temp@fit@H
+      
+      # Max-normalize each component's sample scores to [0,1]
+      # Compensate by scaling gene embeddings to preserve reconstruction
+      eps <- 1e-12
+      
+      for(k in 1:nrow(score)){
+        
+        component_max <- max(score[k, ], na.rm = TRUE)
+        
+        if(component_max > eps){
+          
+          # Normalize sample scores (H)
+          score[k, ] <- score[k, ] / component_max
+          
+          # Compensate by scaling gene embeddings (W)
+          component[, k] <- component[, k] * component_max
+        }
+      }
+      
+      list_component[[i]] = component
+      list_score[[i]] = score
     }
 
     ## Assign name for components

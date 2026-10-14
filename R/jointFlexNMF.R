@@ -93,6 +93,43 @@ jointFlexNMF <- function(dataset, group, comp_num, gene_score = NULL, sample_sco
     }
     H = rbind(H, H_temp)
   }
+  
+  ## Validate fixed sample scores against group structure
+  if (!is.null(sample_score)) {
+    
+    if (nrow(sample_score) != M || ncol(sample_score) != total_N) {
+      stop("sample_score must have M rows and total_N columns.")
+    }
+    
+    component_offset = 0
+    
+    for (i in 1:K) {
+      
+      component_indices = (component_offset + 1):(component_offset + comp_num[i])
+      sample_offset = 0
+      
+      for (j in 1:N) {
+        
+        sample_indices = (sample_offset + 1):(sample_offset + N_dataset[j])
+        
+        # This component group should not be active in dataset j
+        if (!(j %in% group[[i]])) {
+          
+          if (any(sample_score[component_indices, sample_indices, drop = FALSE] != 0)) {
+            stop(paste0(
+              "Invalid sample_score: component group ", i,
+              " is not active in dataset ", j,
+              ", but sample_score contains nonzero values in this block."
+            ))
+          }
+        }
+        
+        sample_offset = sample_offset + N_dataset[j]
+      }
+      
+      component_offset = component_offset + comp_num[i]
+    }
+  }
 
   ## Handle pre-defined fixed columns in W (gene_score) and fixed rows in H (sample_score).
   ## Non-zero columns of gene_score are pinned in W; non-zero rows of sample_score are pinned in H.
@@ -128,45 +165,75 @@ jointFlexNMF <- function(dataset, group, comp_num, gene_score = NULL, sample_sco
   }
 
   ## Iteratively estimate the NMF with Euclidean distance
+  eps = 1e-12
   error_out = c()
-
-  for(ite in 1 : max_ite){
-    H = H * (t(W) %*% X) / (t(W) %*% W %*% H)
-    W = W * (X %*% t(H)) / (W %*% H %*% t(H))
-
-    ## Restore pre-defined fixed values after each multiplicative update
+  
+  for (ite in 1:max_ite) {
+    
+    ## Update sample scores
+    H = H * (t(W) %*% X) /
+      pmax(t(W) %*% W %*% H, eps)
+    
+    ## Restore fixed sample scores
     if (has_fixed_H) {
-      H[non_zero_rows_H, ] <- sample_score[non_zero_rows_H, , drop = FALSE]
-      ## Re-enforce group-structure zero blocks in case fixed rows overlap with them
-      for(i in 1 : K){
-        for(j in 1 : N){
-          if(!(j %in% group[[i]])){
-            H[ifelse(i == 1, 1, cumsum(comp_num)[i - 1] + 1) : cumsum(comp_num)[i],
-              ifelse(j == 1, 1, cumsum(N_dataset)[j - 1] + 1) : cumsum(N_dataset)[j]] = 0
-          }
+      H[non_zero_rows_H, ] =
+        sample_score[non_zero_rows_H, , drop = FALSE]
+    }
+    
+    ## Enforce group structure
+    component_offset = 0
+    
+    for (i in 1:K) {
+      
+      component_indices =
+        (component_offset + 1):(component_offset + comp_num[i])
+      
+      sample_offset = 0
+      
+      for (j in 1:N) {
+        
+        sample_indices =
+          (sample_offset + 1):(sample_offset + N_dataset[j])
+        
+        if (!(j %in% group[[i]])) {
+          H[component_indices, sample_indices] = 0
         }
+        
+        sample_offset = sample_offset + N_dataset[j]
+      }
+      
+      component_offset = component_offset + comp_num[i]
+    }
+    
+    ## Update gene embeddings
+    W = W * (X %*% t(H)) /
+      pmax(W %*% H %*% t(H), eps)
+    
+    ## Restore fixed gene embeddings
+    if (has_fixed_W) {
+      W[, non_zero_cols_W] =
+        gene_score[, non_zero_cols_W, drop = FALSE]
+    }
+    
+    ## Calculate reconstruction error
+    error_out = c(error_out, sum((X - W %*% H)^2))
+    
+    ## Check convergence
+    if (length(error_out) >= 2) {
+      
+      prev_error = error_out[length(error_out) - 1]
+      curr_error = error_out[length(error_out)]
+      
+      relative_change =
+        abs(curr_error - prev_error) / max(abs(prev_error), eps)
+      
+      if (relative_change <= max_err) {
+        break
       }
     }
-    if (has_fixed_W) {
-      W[, non_zero_cols_W] <- gene_score[, non_zero_cols_W, drop = FALSE]
-    }
-
-    H[which(is.na(H))] = 0
-    W[which(is.na(W))] = 0
-
-    error_out = c(error_out, sum((X - W %*% H)^2))
-
-    ## Break when the error difference is small
-    if(length(error_out) >= 2 && abs(error_out[length(error_out)] - error_out[length(error_out) - 1]) / abs(error_out[length(error_out) - 1]) <= max_err){
-      break
-    }
-    # print(ite)
-    # print(abs(error_out[length(error_out)] - error_out[length(error_out) - 1]) / abs(error_out[length(error_out) - 1]))
   }
   
-  
-  # H <- t(scale(t(H), center = FALSE))
-  # W = W * (X %*% t(H)) / (W %*% H %*% t(H))
+
   
   
   ## Output component and scores
@@ -193,24 +260,55 @@ jointFlexNMF <- function(dataset, group, comp_num, gene_score = NULL, sample_sco
   # list_score = filterNAValue(list_score, dataset, group)
   list_score = rebalanceData(list_score, group, dataset)
   
+  ## Max-normalize sample scores while preserving reconstruction
+  ## Skip components with fixed gene embeddings or sample scores
   
-  for(i in 1 : K){
-    for(j in 1 : N){
-      # Extract the subset of H based on current i and j
-      list_score[[j]][[i]] <- t(apply(t(list_score[[j]][[i]]), 2, min_max_normalization))
-      H[ifelse(i == 1, 1, cumsum(comp_num)[i - 1] + 1) : cumsum(comp_num)[i],
-        ifelse(j == 1, 1, cumsum(N_dataset)[j - 1] + 1) : cumsum(N_dataset)[j]] <- list_score[[j]][[i]]
+  eps = 1e-12
+  
+  fixed_components = union(non_zero_cols_W, non_zero_rows_H)
+  
+  component_offset = 0
+  
+  for (i in 1:K) {
+    
+    for (k in 1:comp_num[i]) {
+      
+      # Global component index in W and H
+      global_k = component_offset + k
+      
+      # Skip components with fixed W or H
+      if (global_k %in% fixed_components) {
+        next
+      }
+      
+      # Find maximum across all datasets participating in this group
+      component_max = 0
+      
+      for (j in group[[i]]) {
+        component_max = max(
+          component_max,
+          max(list_score[[j]][[i]][k, ], na.rm = TRUE)
+        )
+      }
+      
+      if (component_max > eps) {
+        
+        # Normalize scores across all participating datasets
+        for (j in group[[i]]) {
+          list_score[[j]][[i]][k, ] =
+            list_score[[j]][[i]][k, ] / component_max
+        }
+        
+        # Compensate by scaling gene embeddings
+        list_component[[i]][, k] =
+          list_component[[i]][, k] * component_max
+      }
     }
+    
+    component_offset = component_offset + comp_num[i]
   }
   
-  #recalculate gene score
-  W = W * (X %*% t(H)) / (W %*% H %*% t(H))
-  
-  W[is.na(W)] = 0
-  
-  for(i in 1 : K){
-    list_component[[i]] = W[, ifelse(i == 1, 1, cumsum(comp_num)[i - 1] + 1) : cumsum(comp_num)[i], drop = FALSE]
-  }
+
 
   return(list(linked_component_list = list_component, score_list = list_score, error_out=error_out))
   

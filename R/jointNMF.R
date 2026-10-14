@@ -265,10 +265,24 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
       X = proj_dataset
 
 
-      H = c()
-      for(i in 1 : K){ # K= length(group) = 3 in the example
-        H_temp = c()
-        H_temp = matrix(runif(col * comp_num[i], min_element, max_element), nrow = comp_num[i], ncol = col)
+      H = NULL
+      
+      for (i in seq_len(K)) {
+        
+        if (proj_group[i]) {
+          H_temp = matrix(
+            runif(col * comp_num[i], min_element, max_element),
+            nrow = comp_num[i],
+            ncol = col
+          )
+        } else {
+          H_temp = matrix(
+            0,
+            nrow = comp_num[i],
+            ncol = col
+          )
+        }
+        
         H = rbind(H, H_temp)
       }
 
@@ -278,7 +292,10 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
 
       for(ite in 1 : max_ite){
         ## H is score (sample matrix S)
-        H = H * (t(W) %*% X) / (t(W) %*% W %*% H)# W is list_component (common gene matrix G)
+        eps = 1e-12
+        
+        H = H * (t(W) %*% X) /
+          pmax(t(W) %*% W %*% H, eps)# W is list_component (common gene matrix G)
 
         H[which(is.na(H))] = 0
 
@@ -301,11 +318,11 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
 
       proj_list_score = scoreNameAssignProj(proj_list_score, group_name)
       proj_list_score = sampleNameAssignProj(proj_list_score, proj_sample_name)
-      for(i in 1 : length(proj_group)){
-        if(proj_group[j]){
-          proj_list_score[[i]] = proj_list_score[[i]] * sqrt(ncol(proj_dataset))
-        }
-      }
+      # for(i in 1 : length(proj_group)){
+      #   if(proj_group[j]){
+      #     proj_list_score[[i]] = proj_list_score[[i]] * sqrt(ncol(proj_dataset))
+      #   }
+      # }
     } else {
       proj_list_score = NULL
     }

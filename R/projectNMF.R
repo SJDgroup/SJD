@@ -35,7 +35,7 @@
 
 ## Projection function
 
-projectNMF <- function(proj_dataset, proj_group, list_component, max_ite = 1000, max_err = 0.0001, enable_normalization = TRUE, column_sum_normalization = FALSE){
+projectNMF = function(proj_dataset, proj_group, list_component, max_ite = 1000, max_err = 0.0001, enable_normalization = TRUE, column_sum_normalization = FALSE){
   if(!is.null(proj_dataset)){
     if (length(proj_group) != length(list_component)){
       stop("Error:length of proj_group should equal to length of list_component.")
@@ -60,14 +60,14 @@ projectNMF <- function(proj_dataset, proj_group, list_component, max_ite = 1000,
     comp_num = unlist(lapply(list_component, function(x) if (length(x) > 0) ncol(x)))
     
     # Initialize the matrix W with zeros
-    W <- matrix(0, nrow = p, ncol = sum(comp_num))
+    W = matrix(0, nrow = p, ncol = sum(comp_num))
     K = length(proj_group)
     # Reconstruct matrix W using list_component and comp_num
-    start_col <- 1
+    start_col = 1
     for (i in 1:K) {
-      end_col <- start_col + comp_num[i] - 1
-      W[, start_col:end_col] <- list_component[[i]]
-      start_col <- end_col + 1
+      end_col = start_col + comp_num[i] - 1
+      W[, start_col:end_col] = list_component[[i]]
+      start_col = end_col + 1
     }
   
     
@@ -94,10 +94,24 @@ projectNMF <- function(proj_dataset, proj_group, list_component, max_ite = 1000,
     X = proj_dataset
     
     
-    H = c()
-    for(i in 1 : K){ # K= length(group) = 3 in the example
-      H_temp = c()
-      H_temp = matrix(runif(col * comp_num[i], min_element, max_element), nrow = comp_num[i], ncol = col)
+    H = NULL
+    
+    for (i in seq_len(K)) {
+      
+      if (proj_group[i]) {
+        H_temp = matrix(
+          runif(col * comp_num[i], min_element, max_element),
+          nrow = comp_num[i],
+          ncol = col
+        )
+      } else {
+        H_temp = matrix(
+          0,
+          nrow = comp_num[i],
+          ncol = col
+        )
+      }
+      
       H = rbind(H, H_temp)
     }
     
@@ -107,7 +121,10 @@ projectNMF <- function(proj_dataset, proj_group, list_component, max_ite = 1000,
     
     for(ite in 1 : max_ite){
       ## H is score (sample matrix S)
-      H = H * (t(W) %*% X) / (t(W) %*% W %*% H)# W is list_component (common gene matrix G)
+      eps = 1e-12
+      
+      H = H * (t(W) %*% X) /
+        pmax(t(W) %*% W %*% H, eps)# W is list_component (common gene matrix G)
       
       H[which(is.na(H))] = 0
       
@@ -133,11 +150,11 @@ projectNMF <- function(proj_dataset, proj_group, list_component, max_ite = 1000,
 
     proj_list_score = scoreNameAssignProj(proj_list_score, group_name)
     proj_list_score = sampleNameAssignProj(proj_list_score, proj_sample_name)
-    for(i in 1 : length(proj_group)){
-      if(proj_group[i]){
-        proj_list_score[[i]] = proj_list_score[[i]] * sqrt(ncol(proj_dataset))
-      }
-    }
+    # for(i in 1 : length(proj_group)){
+    #   if(proj_group[i]){
+    #     proj_list_score[[i]] = proj_list_score[[i]] * sqrt(ncol(proj_dataset))
+    #   }
+    # }
     return(list(proj_score_list=proj_list_score,error_out=error_out))
   } else{
     stop("proj_dataset cannot be NULL")

@@ -35,7 +35,7 @@
 
 
 
-flexNMF <- function(dataset, gene_score=NULL, sample_score=NULL, normalize = TRUE, max_ite = 1000, max_err = 0.0001, enable_normalization = TRUE, column_sum_normalization = FALSE){
+flexNMF = function(dataset, gene_score=NULL, sample_score=NULL, normalize = TRUE, max_ite = 1000, max_err = 0.0001, enable_normalization = TRUE, column_sum_normalization = FALSE){
   if(!is.null(dataset)){ 
     if(!is.null(gene_score) && !is.null(sample_score)){
       
@@ -51,11 +51,11 @@ flexNMF <- function(dataset, gene_score=NULL, sample_score=NULL, normalize = TRU
       p = nrow(dataset)
       col = ncol(dataset)
       
-      non_zero_cols_index <- which(colSums(gene_score) > 0)
-      non_zero_cols <- gene_score[, non_zero_cols_index]
+      non_zero_cols_index = which(colSums(gene_score) > 0)
+      non_zero_cols = gene_score[, non_zero_cols_index,drop = FALSE]
       
-      non_zero_rows_index <- which(rowSums(sample_score) > 0)
-      non_zero_rows <- sample_score[non_zero_rows_index, ] 
+      non_zero_rows_index = which(rowSums(sample_score) > 0)
+      non_zero_rows = sample_score[non_zero_rows_index, , drop = FALSE]
       
       
       ## Initialize the W and H for Nonnegative Matrix Factorization
@@ -65,9 +65,9 @@ flexNMF <- function(dataset, gene_score=NULL, sample_score=NULL, normalize = TRU
       min_element = min(min_element, min(dataset))
       
       # Initialize the matrix W with random values (gene score)
-      W <- matrix(runif(p * num_patterns_g, min(non_zero_cols), max(non_zero_cols)), nrow = p, ncol = num_patterns_g)
+      W = matrix(runif(p * num_patterns_g, min(non_zero_cols), max(non_zero_cols)), nrow = p, ncol = num_patterns_g)
       # Initialize the matrix H with random values (sample score)
-      H <- matrix(runif(num_patterns_g * col, min(non_zero_rows), max(non_zero_rows)), nrow = num_patterns_g, ncol = col)
+      H = matrix(runif(num_patterns_g * col, min(non_zero_rows), max(non_zero_rows)), nrow = num_patterns_g, ncol = col)
       
       #extract non-zero columns and rows
       W[, non_zero_cols_index] = non_zero_cols
@@ -75,9 +75,9 @@ flexNMF <- function(dataset, gene_score=NULL, sample_score=NULL, normalize = TRU
       
     
       # create masks for H and W
-      mask_W <- matrix(1, nrow = p, ncol = num_patterns_g)
+      mask_W = matrix(1, nrow = p, ncol = num_patterns_g)
       mask_W[, non_zero_cols_index] = 0
-      mask_H <- matrix(1, nrow = num_patterns_g, ncol= col)
+      mask_H = matrix(1, nrow = num_patterns_g, ncol= col)
       mask_H[non_zero_rows_index, ] = 0
       
       
@@ -92,40 +92,66 @@ flexNMF <- function(dataset, gene_score=NULL, sample_score=NULL, normalize = TRU
       ## Iteratively estimate the NMF with Euclidean distance
       error_out = c()
       
-      W_temp <- W
-      H_temp <- H
+      W_temp = W
+      H_temp = H
       
-      for(ite in 1 : max_ite){
-        ## H is score (sample matrix S)
-        H_temp = H_temp * (t(W_temp) %*% X) / (t(W_temp) %*% W_temp %*% H_temp + mask_H)
-        W_temp = W_temp * (X %*% t(H_temp)) / (W_temp %*% H_temp %*% t(H_temp) + mask_W) 
+      eps = 1e-12
+      
+      for (ite in 1:max_ite) {
+        
+        H_temp = H_temp * (t(W_temp) %*% X) /
+          pmax(t(W_temp) %*% W_temp %*% H_temp, eps)
         
         H_temp[non_zero_rows_index, ] = non_zero_rows
-        W_temp[, non_zero_cols_index] = non_zero_cols
         
+        W_temp = W_temp * (X %*% t(H_temp)) /
+          pmax(W_temp %*% H_temp %*% t(H_temp), eps)
+        
+        W_temp[, non_zero_cols_index] = non_zero_cols
         
         error_out = c(error_out, sum((X - W_temp %*% H_temp)^2))
         
-        ## Break when the error difference is small
-        if(length(error_out) >= 2 && abs(error_out[length(error_out)] - error_out[length(error_out) - 1]) / abs(error_out[length(error_out) - 1]) <= max_err){
-          break
+        if (length(error_out) >= 2) {
+          
+          prev_error = error_out[length(error_out) - 1]
+          curr_error = error_out[length(error_out)]
+          
+          relative_change = abs(curr_error - prev_error) /
+            max(abs(prev_error), eps)
+          
+          if (relative_change <= max_err) {
+            break
+          }
         }
       }
       
-      W <- W_temp
-      H <- H_temp
+      W = W_temp
+      H = H_temp
       
-      H <- t(apply(t(H), 2, min_max_normalization))
-      W = W * (X %*% t(H)) / (W %*% H %*% t(H)) 
+      ## Max-normalize only components without fixed constraints
+      eps = 1e-12
       
-      # proj_list_score = scoreNameAssignProj(proj_list_score, group_name)
-      # proj_list_score = sampleNameAssignProj(proj_list_score, proj_sample_name)
+      fixed_components = union(
+        non_zero_cols_index,
+        non_zero_rows_index
+      )
       
-      # for(i in 1 : length(proj_group)){
-      #   if(proj_group[i]){
-      #     proj_list_score[[i]] = proj_list_score[[i]] * sqrt(ncol(dataset))
-      #   }
-      # }
+      for (k in 1:nrow(H)) {
+        
+        # Do not modify components with fixed W or fixed H
+        if (k %in% fixed_components) {
+          next
+        }
+        
+        component_max = max(H[k, ], na.rm = TRUE)
+        
+        if (component_max > eps) {
+          
+          H[k, ] = H[k, ] / component_max
+          
+          W[, k] = W[, k] * component_max
+        }
+      }
       
       return(list(res_gene_score=W, res_sample_score=H, error_out=error_out))
       
