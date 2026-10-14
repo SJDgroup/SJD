@@ -155,13 +155,13 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
 
 
     # Scale each component to [0, 1] across all datasets in that group
+    # while preserving NMF reconstruction
+    
     eps <- 1e-12
 
     for (i in 1:K) {
       for (k in 1:comp_num[i]) {
-
-        # Find maximum score for this component across all datasets
-        # participating in this group
+        # Find maximum score across all participating datasets
         component_max <- 0
 
         for (j in group[[i]]) {
@@ -170,13 +170,18 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
             max(list_score[[j]][[i]][k, ], na.rm = TRUE)
           )
         }
-
-        # Divide all participating datasets by the SAME maximum
+        
         if (component_max > eps) {
+          
+          # Normalize sample scores (H)
           for (j in group[[i]]) {
             list_score[[j]][[i]][k, ] <-
               list_score[[j]][[i]][k, ] / component_max
           }
+          
+          # Compensate by scaling gene embeddings (W)
+          list_component[[i]][, k] <-
+            list_component[[i]][, k] * component_max
         }
       }
     }
