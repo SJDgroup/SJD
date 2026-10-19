@@ -740,6 +740,69 @@ twoStageNMF <- function(dataset, group, comp_num, comp_num_first_stage, nrun_fir
             sample_name[[dataset_index]]
     }
 
+    ## Normalize first-stage scores for reporting.
+    ## Stage two has already used the original first-stage bases.
+
+    for (i in seq_along(first_stage_G)) {
+        component_max <- apply(first_stage_S[[i]], 1L, max)
+
+        ## Preserve components whose scores are entirely zero.
+        scale_factor <- component_max
+        scale_factor[scale_factor == 0] <- 1
+
+        first_stage_G[[i]] <- sweep(
+            first_stage_G[[i]],
+            MARGIN = 2L,
+            STATS = scale_factor,
+            FUN = "*"
+        )
+
+        first_stage_S[[i]] <- sweep(
+            first_stage_S[[i]],
+            MARGIN = 1L,
+            STATS = scale_factor,
+            FUN = "/"
+        )
+    }
+
+    ## Scale training scores before projecting additional datasets.
+
+    for (g in seq_along(linked_component_list)) {
+        n_components <- ncol(linked_component_list[[g]])
+
+        ## Maximum per component across all training datasets.
+        component_max <- numeric(n_components)
+
+        for (i in seq_along(score_list)) {
+            component_max <- pmax(
+                component_max,
+                apply(score_list[[i]][[g]], 1L, max)
+            )
+        }
+
+        ## Leave components with entirely zero scores unchanged.
+        scale_factor <- component_max
+        scale_factor[scale_factor == 0] <- 1
+
+        ## Rescale gene-loading columns.
+        linked_component_list[[g]] <- sweep(
+            linked_component_list[[g]],
+            MARGIN = 2L,
+            STATS = scale_factor,
+            FUN = "*"
+        )
+
+        ## Rescale corresponding score rows.
+        for (i in seq_along(score_list)) {
+            score_list[[i]][[g]] <- sweep(
+                score_list[[i]][[g]],
+                MARGIN = 1L,
+                STATS = scale_factor,
+                FUN = "/"
+            )
+        }
+    }
+
 
     ## Project an optional additional dataset
 
@@ -956,6 +1019,8 @@ twoStageNMF <- function(dataset, group, comp_num, comp_num_first_stage, nrun_fir
             "`proj_group` was supplied without `proj_dataset` and will be ignored."
         )
     }
+
+
 
     return(list(
         linked_component_list = linked_component_list,
