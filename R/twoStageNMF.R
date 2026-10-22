@@ -27,6 +27,7 @@
 #'   to 100.
 #' @param max_err The maximum error of loss between two iterations, or the
 #'   program will terminate and return, default value is set to be 0.0001.
+#' @param perturbation A small perturbation to ensure nmf works well
 #' @param enable_normalization An argument to decide whether to use
 #'   normalization or not,  default is TRUE.
 #' @param column_sum_normalization An argument to decide whether to use column
@@ -215,7 +216,7 @@
 #' comp_num_first_stage)
 #' @export
 
-twoStageNMF <- function(dataset, group, comp_num, comp_num_first_stage, nrun_first_stage = 1, proj_dataset = NULL, proj_group = NULL, max_ite = 100, max_err = 0.0001, enable_normalization = TRUE, column_sum_normalization = FALSE, use_nnls = FALSE) {
+twoStageNMF <- function(dataset, group, comp_num, comp_num_first_stage, nrun_first_stage = 1, proj_dataset = NULL, proj_group = NULL, max_ite = 100, max_err = 0.0001, perturbation = 0.0001, enable_normalization = TRUE, column_sum_normalization = FALSE, use_nnls = FALSE) {
 
     ## Input handling
     min_comp_first_stage = sum(comp_num[lengths(group) > 1])
@@ -251,7 +252,7 @@ twoStageNMF <- function(dataset, group, comp_num, comp_num_first_stage, nrun_fir
     first_stage_fit   <- vector("list", N)
 
     for (i in 1:N) {
-        nmf_temp = nmf(dataset[[i]], comp_num_first_stage, nrun = nrun_first_stage)
+        nmf_temp = nmf(dataset[[i]] + perturbation, comp_num_first_stage, nrun = nrun_first_stage)
         first_stage_fit[[i]] = nmf_temp
         first_stage_G[[i]] = nmf_temp@fit@W
         first_stage_S[[i]] = nmf_temp@fit@H

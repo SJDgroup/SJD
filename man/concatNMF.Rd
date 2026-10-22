@@ -14,7 +14,9 @@ concatNMF(
   proj_group = NULL,
   enable_normalization = TRUE,
   column_sum_normalization = FALSE,
-  screen_prob = NULL
+  screen_prob = NULL,
+  max_ite = 1000,
+  max_err = 1e-04
 )
 }
 \arguments{

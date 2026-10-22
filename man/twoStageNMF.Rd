@@ -14,6 +14,7 @@ twoStageNMF(
   proj_group = NULL,
   max_ite = 100,
   max_err = 1e-04,
+  perturbation = 1e-04,
   enable_normalization = TRUE,
   column_sum_normalization = FALSE,
   use_nnls = FALSE
@@ -53,6 +54,8 @@ to 100.}
 
 \item{max_err}{The maximum error of loss between two iterations, or the
 program will terminate and return, default value is set to be 0.0001.}
+
+\item{perturbation}{A small perturbation to ensure nmf works well}
 
 \item{enable_normalization}{An argument to decide whether to use
 normalization or not,  default is TRUE.}
