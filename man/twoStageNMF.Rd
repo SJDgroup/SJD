@@ -17,7 +17,10 @@ twoStageNMF(
   perturbation = 1e-04,
   enable_normalization = TRUE,
   column_sum_normalization = FALSE,
-  use_nnls = FALSE
+  use_nnls = FALSE,
+  first_stage_method = c("hals", "brunet"),
+  first_stage_max_ite = 1000,
+  first_stage_tol = 1e-04
 )
 }
 \arguments{
@@ -34,7 +37,9 @@ be used in the first stage NMF. Must be greater or equal to the sum of
 
 \item{nrun_first_stage}{Number of NMF runs to perform in the first stage.
 Multiple runs achieve greater stability and decrease chances of bad local
-minima, but significantly increase computational time.}
+minima, but significantly increase computational time. With
+\code{first_stage_method = "hals"} the runs are performed sequentially
+and the run with the lowest reconstruction error is kept.}
 
 \item{proj_dataset}{An optional nonnegative matrix containing an additional
 dataset to project onto the learned second-stage components. Features must
@@ -55,7 +60,9 @@ to 100.}
 \item{max_err}{The maximum error of loss between two iterations, or the
 program will terminate and return, default value is set to be 0.0001.}
 
-\item{perturbation}{A small perturbation to ensure nmf works well}
+\item{perturbation}{A small constant added to each dataset before the
+first-stage NMF when \code{first_stage_method = "brunet"} (the KL loss is
+undefined at zero). Not used by \code{"hals"}.}
 
 \item{enable_normalization}{An argument to decide whether to use
 normalization or not,  default is TRUE.}
@@ -67,6 +74,21 @@ sum normalization or not, default it FALSE.}
 nonnegative least squares via `nnls::nnls()`.If FALSE, multiplicative
 updates are used. This does not affect sequential steps in which a new
 component matrix is learned. default is FALSE.}
+
+\item{first_stage_method}{Algorithm used for the first-stage NMF of each
+dataset. \code{"hals"} (default) minimizes the Frobenius (least-squares)
+loss, the same loss used in the second stage, with hierarchical
+alternating least squares and a relative-tolerance stopping rule.
+\code{"brunet"} reproduces the previous behaviour: \code{NMF::nmf()} with
+its default KL-divergence algorithm and connectivity stopping rule, which
+is much slower and needs memory quadratic in the number of samples.}
+
+\item{first_stage_max_ite}{Maximum number of HALS iterations per first-stage
+run. Ignored when \code{first_stage_method = "brunet"}.}
+
+\item{first_stage_tol}{Relative change in the first-stage reconstruction
+error below which HALS stops. Ignored when
+\code{first_stage_method = "brunet"}.}
 }
 \value{
 A named list containing the fitted components, scores, convergence
@@ -159,11 +181,13 @@ A named list containing the fitted components, scores, convergence
           samples from dataset \code{i} in columns.
         }
 
-        \item{\code{fit_list}}{
-          A list containing the complete fitted first-stage NMF objects
-          returned by \code{\link[NMF]{nmf}}, one for each input dataset.
-          These objects retain additional diagnostics and algorithm-specific
-          information produced by the NMF package.
+         \item{\code{fit_list}}{
+          A list with one first-stage fit per input dataset. With
+          \code{first_stage_method = "hals"}, each element is a list with
+          the unscaled factors \code{W} and \code{H}, the number of
+          iterations \code{niter}, the error trajectory \code{error_out}
+          and \code{method = "hals"}. With \code{"brunet"}, each element is
+          the object returned by \code{\link[NMF]{nmf}}.
         }
       }
     }

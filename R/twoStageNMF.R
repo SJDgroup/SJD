@@ -11,7 +11,21 @@
 #'   `comp_num` elements associated with groups of multiple datasets.
 #' @param nrun_first_stage Number of NMF runs to perform in the first stage.
 #'   Multiple runs achieve greater stability and decrease chances of bad local
-#'   minima, but significantly increase computational time.
+#'   minima, but significantly increase computational time. With
+#'   \code{first_stage_method = "hals"} the runs are performed sequentially
+#'   and the run with the lowest reconstruction error is kept.
+#' @param first_stage_method Algorithm used for the first-stage NMF of each
+#'   dataset. \code{"hals"} (default) minimizes the Frobenius (least-squares)
+#'   loss, the same loss used in the second stage, with hierarchical
+#'   alternating least squares and a relative-tolerance stopping rule.
+#'   \code{"brunet"} reproduces the previous behaviour: \code{NMF::nmf()} with
+#'   its default KL-divergence algorithm and connectivity stopping rule, which
+#'   is much slower and needs memory quadratic in the number of samples.
+#' @param first_stage_max_ite Maximum number of HALS iterations per first-stage
+#'   run. Ignored when \code{first_stage_method = "brunet"}.
+#' @param first_stage_tol Relative change in the first-stage reconstruction
+#'   error below which HALS stops. Ignored when
+#'   \code{first_stage_method = "brunet"}.
 #' @param proj_dataset An optional nonnegative matrix containing an additional
 #'   dataset to project onto the learned second-stage components. Features must
 #'   be in rows and samples in columns. If row names are available, features are
@@ -27,7 +41,9 @@
 #'   to 100.
 #' @param max_err The maximum error of loss between two iterations, or the
 #'   program will terminate and return, default value is set to be 0.0001.
-#' @param perturbation A small perturbation to ensure nmf works well
+#' @param perturbation A small constant added to each dataset before the
+#'   first-stage NMF when \code{first_stage_method = "brunet"} (the KL loss is
+#'   undefined at zero). Not used by \code{"hals"}.
 #' @param enable_normalization An argument to decide whether to use
 #'   normalization or not,  default is TRUE.
 #' @param column_sum_normalization An argument to decide whether to use column
@@ -127,11 +143,13 @@
 #'           samples from dataset \code{i} in columns.
 #'         }
 #'
-#'         \item{\code{fit_list}}{
-#'           A list containing the complete fitted first-stage NMF objects
-#'           returned by \code{\link[NMF]{nmf}}, one for each input dataset.
-#'           These objects retain additional diagnostics and algorithm-specific
-#'           information produced by the NMF package.
+#'          \item{\code{fit_list}}{
+#'           A list with one first-stage fit per input dataset. With
+#'           \code{first_stage_method = "hals"}, each element is a list with
+#'           the unscaled factors \code{W} and \code{H}, the number of
+#'           iterations \code{niter}, the error trajectory \code{error_out}
+#'           and \code{method = "hals"}. With \code{"brunet"}, each element is
+#'           the object returned by \code{\link[NMF]{nmf}}.
 #'         }
 #'       }
 #'     }
@@ -216,7 +234,9 @@
 #' comp_num_first_stage)
 #' @export
 
-twoStageNMF <- function(dataset, group, comp_num, comp_num_first_stage, nrun_first_stage = 1, proj_dataset = NULL, proj_group = NULL, max_ite = 100, max_err = 0.0001, perturbation = 0.0001, enable_normalization = TRUE, column_sum_normalization = FALSE, use_nnls = FALSE) {
+twoStageNMF <- function(dataset, group, comp_num, comp_num_first_stage, nrun_first_stage = 1, proj_dataset = NULL, proj_group = NULL, max_ite = 100, max_err = 0.0001, perturbation = 0.0001, enable_normalization = TRUE, column_sum_normalization = FALSE, use_nnls = FALSE, first_stage_method = c("hals", "brunet"), first_stage_max_ite = 1000, first_stage_tol = 1e-4) {
+
+    first_stage_method <- match.arg(first_stage_method)
 
     ## Input handling
     min_comp_first_stage = sum(comp_num[lengths(group) > 1])
@@ -252,10 +272,29 @@ twoStageNMF <- function(dataset, group, comp_num, comp_num_first_stage, nrun_fir
     first_stage_fit   <- vector("list", N)
 
     for (i in 1:N) {
-        nmf_temp = nmf(dataset[[i]] + perturbation, comp_num_first_stage, nrun = nrun_first_stage)
-        first_stage_fit[[i]] = nmf_temp
-        first_stage_G[[i]] = nmf_temp@fit@W
-        first_stage_S[[i]] = nmf_temp@fit@H
+        if (first_stage_method == "brunet") {
+            nmf_temp = nmf(dataset[[i]] + perturbation, comp_num_first_stage, nrun = nrun_first_stage)
+            first_stage_fit[[i]] = nmf_temp
+            first_stage_G[[i]] = nmf_temp@fit@W
+            first_stage_S[[i]] = nmf_temp@fit@H
+        } else {
+            ## Sequential restarts; keep the run with the lowest final error.
+            best_fit <- NULL
+            for (run in seq_len(nrun_first_stage)) {
+                fit <- halsNMF(
+                    dataset[[i]],
+                    rank = comp_num_first_stage,
+                    max_ite = first_stage_max_ite,
+                    tol = first_stage_tol
+                )
+                if (is.null(best_fit) || fit$final_error < best_fit$final_error) {
+                    best_fit <- fit
+                }
+            }
+            first_stage_fit[[i]] = best_fit
+            first_stage_G[[i]] = best_fit$W
+            first_stage_S[[i]] = best_fit$H
+        }
     }
 
     ## Second stage NMF: apply NMF to combined G matrices from first step
