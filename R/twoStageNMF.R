@@ -510,13 +510,25 @@ twoStageNMF <- function(dataset, group, comp_num, comp_num_first_stage, nrun_fir
             stop("Cannot estimate scores from an empty component matrix.")
         }
 
-        if (any(!is.finite(X)) || any(!is.finite(G))) {
+        ## min() and max() scan X without allocating; they return NA/NaN if X
+        ## has missing values and +-Inf if it has infinite values.
+        lower <- min(X)
+        upper <- max(X)
+
+        if (!is.finite(lower) || !is.finite(upper) || any(!is.finite(G))) {
             stop("`X` and `G` must contain only finite values.")
         }
 
-        if (any(X < 0) || any(G < 0)) {
+        if (lower < 0 || any(G < 0)) {
             stop("NNMF projection requires nonnegative `X` and `G`.")
         }
+
+        ## G is fixed, so the only products that involve X are computed once.
+        ## The error then uses
+        ##     ||X - G S||^2 = ||X||^2 - 2 <G'X, S> + <G'G, S S'>
+        ## and never forms the p x n matrix G %*% S.
+        X_norm2 <- norm(X, "F")^2
+        GtG <- crossprod(G)
 
         if (use_nnls) {
             ## ----------------------------------------------------
@@ -525,6 +537,11 @@ twoStageNMF <- function(dataset, group, comp_num, comp_num_first_stage, nrun_fir
             ## One independent NNLS problem is solved per sample:
             ##     min || X[, j] - G %*% S[, j] ||^2
             ##     subject to S[, j] >= 0
+            ##
+            ## With the thin QR factorization G = Q R (Q orthonormal),
+            ##     || x - G s ||^2 = || Q'x - R s ||^2 + const,
+            ## so each problem is solved on the small R and Q'x instead of
+            ## on G and the full column of X (same solution).
             ## ----------------------------------------------------
 
             S <- matrix(
@@ -533,21 +550,39 @@ twoStageNMF <- function(dataset, group, comp_num, comp_num_first_stage, nrun_fir
                 ncol = ncol(X)
             )
 
-            for (sample_index in seq_len(ncol(X))) {
-                fit <- nnls::nnls(
-                    A = G,
-                    b = X[, sample_index]
-                )
+            qr_G <- qr(G)
 
-                S[, sample_index] <- stats::coef(fit)
+            if (qr_G$rank == ncol(G)) {
+                R <- qr.R(qr_G)
+                QtX <- crossprod(qr.Q(qr_G), X)       # ncol(G) x n
+                columns <- qr_G$pivot
+
+                for (sample_index in seq_len(ncol(X))) {
+                    fit <- nnls::nnls(
+                        A = R,
+                        b = QtX[, sample_index]
+                    )
+
+                    S[columns, sample_index] <- stats::coef(fit)
+                }
+            } else {
+                ## Rank-deficient G: solve on G directly.
+                for (sample_index in seq_len(ncol(X))) {
+                    fit <- nnls::nnls(
+                        A = G,
+                        b = X[, sample_index]
+                    )
+
+                    S[, sample_index] <- stats::coef(fit)
+                }
             }
 
             rownames(S) <- colnames(G)
             colnames(S) <- colnames(X)
 
-            reconstruction_error <- sum(
-                (X - G %*% S)^2
-            )
+            reconstruction_error <- X_norm2 -
+                2 * sum(crossprod(G, X) * S) +
+                sum(GtG * tcrossprod(S))
 
             return(list(
                 score = S,
@@ -558,9 +593,6 @@ twoStageNMF <- function(dataset, group, comp_num, comp_num_first_stage, nrun_fir
 
 
         ## Multiplicative-update projection
-
-        upper <- max(X)
-        lower <- min(X)
 
         if (!is.finite(upper) || upper <= 0) {
             upper <- 1
@@ -576,20 +608,17 @@ twoStageNMF <- function(dataset, group, comp_num, comp_num_first_stage, nrun_fir
             ncol = ncol(X)
         )
 
+        GtX <- crossprod(G, X)       # ncol(G) x n, fixed
+
         error_history <- numeric(max_ite)
 
         for (iteration in seq_len(max_ite)) {
-            numerator_S <- crossprod(G, X)
-
-            denominator_S <-
-                crossprod(G, G %*% S)
-
-            S <- S * numerator_S / denominator_S
+            ## Same as crossprod(G, X) / crossprod(G, G %*% S).
+            S <- S * GtX / (GtG %*% S)
             S[!is.finite(S)] <- 0
 
-            error_history[iteration] <- sum(
-                (X - G %*% S)^2
-            )
+            error_history[iteration] <- X_norm2 - 2 * sum(GtX * S) +
+                sum(GtG * tcrossprod(S))
 
             if (iteration > 1L) {
                 previous_error <- error_history[iteration - 1L]
