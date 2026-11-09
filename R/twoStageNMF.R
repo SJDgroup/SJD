@@ -409,15 +409,22 @@ twoStageNMF <- function(dataset, group, comp_num, comp_num_first_stage, nrun_fir
 
         H <- H * mask
 
-        ## Iteratively estimate the NMF with Euclidean distance
+        ## Iteratively estimate the NMF with Euclidean distance.
+        ##
+        ## Only new_W changes during this step, so W'X and W'W are kept up to
+        ## date by recomputing just their new_W parts. No p x n matrix (such
+        ## as W %*% H) is formed: the products are ordered to stay small, and
+        ## the error uses ||X - WH||^2 = ||X||^2 - 2 <W'X, H> + <W'W, HH'>.
+        X_norm2 <- norm(X, "F")^2
+        WtX <- crossprod(W, X)     # (old_rank + new_rank) x n
+        WtW <- crossprod(W)        # (old_rank + new_rank) x (old_rank + new_rank)
+
         error_history <- numeric(max_ite)
 
         for (iteration in seq_len(max_ite)) {
             ## Update all permitted coefficients.
-            numerator_H <- crossprod(W, X)
-            denominator_H <- crossprod(W, W %*% H)
-
-            H <- H * numerator_H / denominator_H
+            ## (Same as crossprod(W, X) / crossprod(W, W %*% H).)
+            H <- H * WtX / (WtW %*% H)
 
             ## Reimpose exact structural zeros.
             H <- H * mask
@@ -426,14 +433,21 @@ twoStageNMF <- function(dataset, group, comp_num, comp_num_first_stage, nrun_fir
             H_new <- H[new_rows, , drop = FALSE]
 
             numerator_W <- X %*% t(H_new)
-            denominator_W <- W %*% H %*% t(H_new)
+            denominator_W <- W %*% tcrossprod(H, H_new)   # = W %*% H %*% t(H_new)
 
             new_W <- new_W * numerator_W / denominator_W
             new_W[!is.finite(new_W)] <- 0
 
             W[, new_rows] <- new_W
 
-            error_history[iteration] <- sum((X - W %*% H)^2)
+            ## Refresh the new_W parts of W'X and W'W (also used by the next
+            ## H update).
+            WtX[new_rows, ] <- crossprod(new_W, X)
+            WtW[, new_rows] <- crossprod(W, new_W)
+            WtW[new_rows, ] <- t(WtW[, new_rows, drop = FALSE])
+
+            error_history[iteration] <- X_norm2 - 2 * sum(WtX * H) +
+                sum(WtW * tcrossprod(H))
 
             if (iteration > 1L) {
                 relative_change <- abs(
