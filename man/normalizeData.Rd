@@ -18,7 +18,7 @@ normalizeData(
 
 \item{column_sum_normalization}{An argument to decide whether to use column sum normalization or not, default it TRUE}
 
-\item{nonnegative_normalization}{An argument to decide wehther it is nonnegative matrix factorization based or not, default is FALSE}
+\item{nonnegative_normalization}{An argument to decide wehther it is nonnegative matrix factorization based or not, default is FALSE. If TRUE, each column is divided by its sum relative to the smallest column sum (data stay nonnegative); if TRUE and enable_normalization is FALSE, the data are returned unchanged.}
 }
 \description{
 Normalize data to have mean zero and std 1

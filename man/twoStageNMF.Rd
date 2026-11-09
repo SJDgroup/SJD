@@ -65,7 +65,13 @@ first-stage NMF when \code{first_stage_method = "brunet"} (the KL loss is
 undefined at zero). Not used by \code{"hals"}.}
 
 \item{enable_normalization}{An argument to decide whether to use
-normalization or not,  default is TRUE.}
+normalization or not,  default is TRUE. If FALSE, \code{dataset} (and
+\code{proj_dataset}) are used exactly as provided, so they must already
+be nonnegative and normalized. To save memory on large inputs, normalize
+each dataset in place beforehand, e.g.
+\code{for (i in seq_along(dataset)) dataset[[i]] <-
+normalizeData(dataset[[i]], nonnegative_normalization = TRUE)}, and then
+call \code{twoStageNMF(..., enable_normalization = FALSE)}.}
 
 \item{column_sum_normalization}{An argument to decide whether to use column
 sum normalization or not, default it FALSE.}

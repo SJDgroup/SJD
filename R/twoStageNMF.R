@@ -45,7 +45,13 @@
 #'   first-stage NMF when \code{first_stage_method = "brunet"} (the KL loss is
 #'   undefined at zero). Not used by \code{"hals"}.
 #' @param enable_normalization An argument to decide whether to use
-#'   normalization or not,  default is TRUE.
+#'   normalization or not,  default is TRUE. If FALSE, \code{dataset} (and
+#'   \code{proj_dataset}) are used exactly as provided, so they must already
+#'   be nonnegative and normalized. To save memory on large inputs, normalize
+#'   each dataset in place beforehand, e.g.
+#'   \code{for (i in seq_along(dataset)) dataset[[i]] <-
+#'   normalizeData(dataset[[i]], nonnegative_normalization = TRUE)}, and then
+#'   call \code{twoStageNMF(..., enable_normalization = FALSE)}.
 #' @param column_sum_normalization An argument to decide whether to use column
 #'   sum normalization or not, default it FALSE.
 #' @param use_nnls Logical. If TRUE, fixed-basis projections are estimated using
@@ -319,7 +325,13 @@ twoStageNMF <- function(dataset, group, comp_num, comp_num_first_stage, nrun_fir
             block_list <- first_stage_G[current_group]
         }
 
-        X <- do.call(cbind, block_list)
+        ## A singleton target is the dataset itself: reference it instead of
+        ## copying it with cbind().
+        X <- if (length(block_list) == 1L) {
+            block_list[[1L]]
+        } else {
+            do.call(cbind, block_list)
+        }
 
         ## Dataset membership of every column of X.
         column_dataset <- rep(
