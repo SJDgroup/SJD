@@ -304,19 +304,27 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
       }
 
 
-      ## Iteratively estimate the NMF with Euclidean distance
+      ## Iteratively estimate the NMF with Euclidean distance.
+      ##
+      ## W is fixed here, so the products involving X are computed once,
+      ## and the error uses
+      ##     ||X - WH||^2 = ||X||^2 - 2 <W'X, H> + <W'W, H H'>
+      ## without forming the p x n matrix W %*% H.
+      WtX = crossprod(W, X)     # = t(W) %*% X, fixed
+      WtW = crossprod(W)        # = t(W) %*% W, fixed
+      X_norm2 = norm(X, "F")^2
       error_out = c()
 
       for(ite in 1 : max_ite){
-        ## H is score (sample matrix S)
+          ## H is score (sample matrix S)
         eps = 1e-12
 
-        H = H * (t(W) %*% X) /
-          pmax(t(W) %*% W %*% H, eps)# W is list_component (common gene matrix G)
+        H = H * WtX /
+          pmax(WtW %*% H, eps)# W is list_component (common gene matrix G)
 
         H[which(is.na(H))] = 0
 
-        error_out = c(error_out, sum((X - W %*% H)^2))
+        error_out = c(error_out, X_norm2 - 2 * sum(WtX * H) + sum(WtW * tcrossprod(H)))
         ## Break when the error difference is small
         if(length(error_out) >= 2 && abs(error_out[length(error_out)] - error_out[length(error_out) - 1]) / abs(error_out[length(error_out) - 1]) <= max_err){
           break
