@@ -92,17 +92,34 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
         H = rbind(H, H_temp)
     }
 
-    ## Iteratively estimate the NMF with Euclidean distance
+    ## Iteratively estimate the NMF with Euclidean distance.
+    ##
+    ## Products are ordered so that no p x (all samples) matrix such as
+    ## W %*% H is ever formed, and the error uses
+    ##     ||X - WH||^2 = ||X||^2 - 2 <X H', W> + <W'W, H H'>.
+    X_norm2 = norm(X, "F")^2
     error_out = c()
 
     for(ite in 1 : max_ite){
-        H = H * (t(W) %*% X) / (t(W) %*% W %*% H)
-        W = W * (X %*% t(H)) / (W %*% H %*% t(H))
+        ## Same as (t(W) %*% X) / (t(W) %*% W %*% H)
+        H = H * crossprod(W, X) / (crossprod(W) %*% H)
 
-        H[which(is.na(H))] = 0
+        ## Same as (X %*% t(H)) / (W %*% H %*% t(H))
+        XHt = X %*% t(H)
+        HHt = tcrossprod(H)
+        W = W * XHt / (W %*% HHt)
+
+        H_na = which(is.na(H))
+        if(length(H_na) > 0){
+            ## Rare (a 0/0 update): zero the entries, then refresh the
+            ## products the error uses.
+            H[H_na] = 0
+            XHt = X %*% t(H)
+            HHt = tcrossprod(H)
+        }
         W[which(is.na(W))] = 0
 
-        error_out = c(error_out, sum((X - W %*% H)^2))
+        error_out = c(error_out, X_norm2 - 2 * sum(XHt * W) + sum(crossprod(W) * HHt))
 
         ## Break when the error difference is small
         if(length(error_out) >= 2 && abs(error_out[length(error_out)] - error_out[length(error_out) - 1]) / abs(error_out[length(error_out) - 1]) <= max_err){
@@ -156,7 +173,7 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
 
     # Scale each component to [0, 1] across all datasets in that group
     # while preserving NMF reconstruction
-    
+
     eps <- 1e-12
 
     for (i in 1:K) {
@@ -170,15 +187,15 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
             max(list_score[[j]][[i]][k, ], na.rm = TRUE)
           )
         }
-        
+
         if (component_max > eps) {
-          
+
           # Normalize sample scores (H)
           for (j in group[[i]]) {
             list_score[[j]][[i]][k, ] <-
               list_score[[j]][[i]][k, ] / component_max
           }
-          
+
           # Compensate by scaling gene embeddings (W)
           list_component[[i]][, k] <-
             list_component[[i]][, k] * component_max
@@ -266,9 +283,9 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
 
 
       H = NULL
-      
+
       for (i in seq_len(K)) {
-        
+
         if (proj_group[i]) {
           H_temp = matrix(
             runif(col * comp_num[i], min_element, max_element),
@@ -282,7 +299,7 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
             ncol = col
           )
         }
-        
+
         H = rbind(H, H_temp)
       }
 
@@ -293,7 +310,7 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
       for(ite in 1 : max_ite){
         ## H is score (sample matrix S)
         eps = 1e-12
-        
+
         H = H * (t(W) %*% X) /
           pmax(t(W) %*% W %*% H, eps)# W is list_component (common gene matrix G)
 
