@@ -306,7 +306,10 @@ twoStageNMF <- function(dataset, group, comp_num, comp_num_first_stage, nrun_fir
     ## Second stage NMF: apply NMF to combined G matrices from first step
     K = length(group)
     p = nrow(dataset[[1]])
-    first_stage_G = normalizeData(first_stage_G, enable_normalization = TRUE, column_sum_normalization = TRUE, nonnegative_normalization = TRUE)
+    ## Stage two uses column-sum-normalized first-stage bases. Keep the fitted
+    ## bases in first_stage_G for the returned first_stage output, so that
+    ## component_list %*% score_list reproduces the first-stage fit.
+    first_stage_G_norm = normalizeData(first_stage_G, enable_normalization = TRUE, column_sum_normalization = TRUE, nonnegative_normalization = TRUE)
 
     second_stage_G     <- vector("list", K)
     second_stage_S     <- vector("list", K)
@@ -322,7 +325,7 @@ twoStageNMF <- function(dataset, group, comp_num, comp_num_first_stage, nrun_fir
         if (length(current_group) == 1L) {
             block_list <- list(dataset[[current_group]])
         } else {
-            block_list <- first_stage_G[current_group]
+            block_list <- first_stage_G_norm[current_group]
         }
 
         ## A singleton target is the dataset itself: reference it instead of
