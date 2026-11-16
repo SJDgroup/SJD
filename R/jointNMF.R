@@ -137,9 +137,9 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
     }
 
     for(i in 1 : K){
-      list_component[[i]] = W[, ifelse(i == 1, 1, cumsum(comp_num)[i - 1] + 1) : cumsum(comp_num)[i]]
+      list_component[[i]] = W[, ifelse(i == 1, 1, cumsum(comp_num)[i - 1] + 1) : cumsum(comp_num)[i], drop = FALSE]
       for(j in 1 : N){
-        list_score[[j]][[i]] = H[ifelse(i == 1, 1, cumsum(comp_num)[i - 1] + 1) : cumsum(comp_num)[i], ifelse(j == 1, 1, cumsum(N_dataset)[j - 1] + 1) : cumsum(N_dataset)[j]]
+        list_score[[j]][[i]] = H[ifelse(i == 1, 1, cumsum(comp_num)[i - 1] + 1) : cumsum(comp_num)[i], ifelse(j == 1, 1, cumsum(N_dataset)[j - 1] + 1) : cumsum(N_dataset)[j], drop = FALSE]
       }
     }
 
@@ -156,7 +156,7 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
 
     # Scale each component to [0, 1] across all datasets in that group
     # while preserving NMF reconstruction
-    
+
     eps <- 1e-12
 
     for (i in 1:K) {
@@ -170,15 +170,15 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
             max(list_score[[j]][[i]][k, ], na.rm = TRUE)
           )
         }
-        
+
         if (component_max > eps) {
-          
+
           # Normalize sample scores (H)
           for (j in group[[i]]) {
             list_score[[j]][[i]][k, ] <-
               list_score[[j]][[i]][k, ] / component_max
           }
-          
+
           # Compensate by scaling gene embeddings (W)
           list_component[[i]][, k] <-
             list_component[[i]][, k] * component_max
@@ -223,9 +223,9 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
         common_genes.DATA = match(CMNgenes,rownames(proj_dataset))
         common_genes.COMP = match(CMNgenes,rownames(list_component[[1]]))
         orig_gene_length = nrow(proj_dataset)
-        proj_dataset = proj_dataset[common_genes.DATA,]
+        proj_dataset = proj_dataset[common_genes.DATA, , drop = FALSE]
         for (i in 1:length(list_component)) {
-          list_component[[i]] = list_component[[i]][common_genes.COMP,]
+          list_component[[i]] = list_component[[i]][common_genes.COMP, , drop = FALSE]
         }
         print(paste("Input", orig_gene_length, "genes in proj_dataset, found", nrow(proj_dataset), "genes in common."))
       }
@@ -266,9 +266,9 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
 
 
       H = NULL
-      
+
       for (i in seq_len(K)) {
-        
+
         if (proj_group[i]) {
           H_temp = matrix(
             runif(col * comp_num[i], min_element, max_element),
@@ -282,7 +282,7 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
             ncol = col
           )
         }
-        
+
         H = rbind(H, H_temp)
       }
 
@@ -293,7 +293,7 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
       for(ite in 1 : max_ite){
         ## H is score (sample matrix S)
         eps = 1e-12
-        
+
         H = H * (t(W) %*% X) /
           pmax(t(W) %*% W %*% H, eps)# W is list_component (common gene matrix G)
 
@@ -310,7 +310,7 @@ jointNMF <- function(dataset, group, comp_num, weighting = NULL, max_ite = 1000,
       proj_list_score= list()
       for(j in 1 : length(proj_group)){ # j goes from 1 to 3 since we have 3 groups
         if(proj_group[j]){
-          proj_list_score[[j]] = H[ifelse(j == 1, 1, cumsum(comp_num)[j - 1] + 1) : cumsum(comp_num)[j],  1:col]
+          proj_list_score[[j]] = H[ifelse(j == 1, 1, cumsum(comp_num)[j - 1] + 1) : cumsum(comp_num)[j],  1:col, drop = FALSE]
         } else {
           proj_list_score[[j]] = matrix(0, nrow = comp_num[j], ncol = col)
         }
